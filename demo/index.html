@@ -1,0 +1,712 @@
+<title>Платформа Зачёт</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Golos+Text:wght@400;500;600&family=Unbounded:wght@600&display=swap">
+<style>
+:root{
+  --bg:#EDF1EE; --surface:#FAFCFB; --sunken:#E3E9E5;
+  --ink:#15201B; --ink-2:#3F4D46; --muted:#5F6D66;
+  --line:#CBD5CF; --line-strong:#9AA8A1;
+  --accent:#1B5A48; --accent-hover:#154A3B; --on-accent:#F1F7F4; --accent-soft:#D5E5DD;
+  --good:#3B7420; --bad:#AE3A2C;
+  --font-body:"Golos Text","Segoe UI",system-ui,-apple-system,sans-serif;
+  --font-display:"Unbounded","Golos Text",system-ui,sans-serif;
+  --r-control:6px; --r-panel:8px;
+  --h-control:40px; --h-compact:32px;
+  --fs-xs:13px; --fs-s:14px; --fs-m:16px; --fs-l:20px; --fs-xl:26px; --fs-hero:44px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#111714; --surface:#18201C; --sunken:#212B26;
+    --ink:#E5ECE8; --ink-2:#B6C3BC; --muted:#8F9D96;
+    --line:#2E3A34; --line-strong:#4A5851;
+    --accent:#74C2A2; --accent-hover:#8DD0B4; --on-accent:#0D1512; --accent-soft:#1E3A2F;
+    --good:#93C870; --bad:#F08C78;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#111714; --surface:#18201C; --sunken:#212B26;
+  --ink:#E5ECE8; --ink-2:#B6C3BC; --muted:#8F9D96;
+  --line:#2E3A34; --line-strong:#4A5851;
+  --accent:#74C2A2; --accent-hover:#8DD0B4; --on-accent:#0D1512; --accent-soft:#1E3A2F;
+  --good:#93C870; --bad:#F08C78;
+}
+
+*{box-sizing:border-box}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:400 var(--fs-m)/1.55 var(--font-body)}
+h1,h2,h3{margin:0;text-wrap:balance;line-height:1.25}
+h1{font-size:var(--fs-xl);font-weight:600}
+h2{font-size:var(--fs-l);font-weight:600}
+p{margin:0}
+button,input,select{font:inherit;color:inherit}
+
+/* layout: sidebar + full-width work area */
+.app{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:100%}
+.side{background:var(--surface);border-right:1px solid var(--line);padding:20px 16px;display:flex;flex-direction:column;gap:20px;position:sticky;top:env(safe-area-inset-top,0px);height:100dvh;overflow-y:auto}
+.brand{display:flex;flex-direction:column;gap:4px}
+.brand-name{font:600 22px/1.1 var(--font-display);letter-spacing:-.01em}
+.brand-note{font-size:var(--fs-xs);color:var(--muted)}
+.side-block{display:flex;flex-direction:column;gap:8px}
+.side-label{font-size:var(--fs-xs);color:var(--muted)}
+.roles{display:flex;flex-direction:column;border:1px solid var(--line-strong);border-radius:var(--r-control);overflow:hidden}
+.roles button{flex:1;height:var(--h-compact);border:0;background:transparent;cursor:pointer;font-size:var(--fs-s);font-weight:500;padding:0 10px;text-align:left;transition:background-color .15s,color .15s}
+.roles button + button{border-top:1px solid var(--line-strong)}
+.roles button:hover{background:var(--sunken)}
+.roles button[aria-pressed="true"]{background:var(--ink);color:var(--bg)}
+.nav{display:flex;flex-direction:column;gap:2px}
+.nav button{display:flex;align-items:center;justify-content:space-between;gap:8px;height:36px;padding:0 10px;border:0;border-radius:var(--r-control);background:transparent;text-align:left;cursor:pointer;color:var(--ink-2);transition:background-color .15s,color .15s}
+.nav button:hover{background:var(--sunken);color:var(--ink)}
+.nav button[aria-current="page"]{background:var(--accent-soft);color:var(--ink);font-weight:600}
+.nav .count{font-size:var(--fs-xs);color:var(--muted);font-variant-numeric:tabular-nums}
+.who{margin-top:auto;display:flex;flex-direction:column;gap:10px;font-size:var(--fs-s);color:var(--ink-2)}
+.who strong{color:var(--ink);font-weight:600}
+.linkish{align-self:flex-start;height:var(--h-compact);padding:0 10px;border:1px solid var(--line);border-radius:var(--r-control);background:transparent;font-size:var(--fs-xs);color:var(--ink-2);cursor:pointer;transition:background-color .15s}
+.linkish:hover{background:var(--sunken)}
+
+.main{padding-block:32px 56px;padding-inline:36px;max-width:1480px;width:100%;display:flex;flex-direction:column;gap:24px}
+.head{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.head-text{display:flex;flex-direction:column;gap:6px;max-width:70ch}
+.lead{color:var(--ink-2)}
+.note{font-size:var(--fs-s);color:var(--muted)}
+.note:empty{display:none}
+
+/* controls */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:var(--h-control);padding:0 16px;border:1px solid var(--line-strong);border-radius:var(--r-control);background:var(--surface);color:var(--ink);font-weight:500;font-size:15px;cursor:pointer;white-space:nowrap;transition:background-color .15s,border-color .15s,transform .1s}
+.btn:hover{background:var(--sunken)}
+.btn:active{transform:translateY(1px)}
+.btn-primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent)}
+.btn-primary:hover{background:var(--accent-hover);border-color:var(--accent-hover)}
+.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.inp{height:var(--h-control);padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--r-control);background:var(--surface);width:100%;max-width:380px}
+select.inp{padding-right:8px}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:12px}
+
+/* panels & lists */
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel)}
+.tests{display:flex;flex-direction:column}
+.test-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:16px 32px;align-items:center;padding:20px 24px}
+.test-row + .test-row{border-top:1px solid var(--line)}
+.test-info{display:flex;flex-direction:column;gap:4px;max-width:66ch}
+.test-meta{font-size:var(--fs-s);color:var(--muted)}
+.test-buy{display:flex;align-items:center;gap:16px}
+.price{font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap}
+.owned{font-size:var(--fs-s);color:var(--ink-2);white-space:nowrap}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-panel)}
+table{width:100%;border-collapse:collapse;font-size:15px}
+th{text-align:left;font-weight:600;font-size:var(--fs-s);color:var(--ink-2);padding:10px 16px;border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+td{padding:10px 16px;border-bottom:1px solid var(--line);vertical-align:middle}
+tr:last-child td{border-bottom:0}
+.num{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+.nowrap{white-space:nowrap}
+.cell-sub{display:block;font-size:var(--fs-xs);color:var(--muted)}
+.mark{display:inline-flex;align-items:center;gap:6px;white-space:nowrap;font-weight:500}
+.mark svg{flex:none}
+.mark-good{color:var(--good)}
+.mark-bad{color:var(--bad)}
+.summary{display:flex;flex-wrap:wrap;gap:6px 28px;color:var(--ink-2)}
+.summary b{color:var(--ink);font-weight:600;font-variant-numeric:tabular-nums}
+
+/* test taking */
+.take{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;align-items:start}
+.qcard{padding:28px;display:flex;flex-direction:column;gap:20px}
+.qtop{display:flex;flex-wrap:wrap;justify-content:space-between;gap:8px 16px;font-size:var(--fs-s);color:var(--muted)}
+.qprompt{font-size:var(--fs-l);font-weight:600;line-height:1.4;max-width:62ch}
+.opts{display:flex;flex-direction:column;gap:8px;max-width:62ch}
+.opt{display:flex;align-items:center;gap:12px;min-height:var(--h-control);padding:8px 14px;border:1px solid var(--line);border-radius:var(--r-control);background:var(--surface);cursor:pointer;transition:border-color .15s,background-color .15s}
+.opt:hover{border-color:var(--line-strong)}
+.opt:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.opt input{accent-color:var(--accent);width:18px;height:18px;margin:0;flex:none}
+.opt:has(input:disabled){cursor:default}
+.match{display:grid;grid-template-columns:minmax(120px,max-content) minmax(0,320px);gap:10px 20px;align-items:center}
+.match-term{font-weight:600}
+.zone{display:flex;flex-wrap:wrap;gap:8px;min-height:52px;padding:9px;border-radius:var(--r-control)}
+.zone-built{border:1px dashed var(--line-strong);background:var(--bg)}
+.zone-empty{align-self:center;color:var(--muted);font-size:var(--fs-s);padding-left:4px}
+.chip{height:var(--h-compact);padding:0 12px;border:1px solid var(--line-strong);border-radius:var(--r-control);background:var(--surface);cursor:pointer;transition:background-color .15s,border-color .15s}
+.chip:hover{background:var(--sunken)}
+.chip-in{border-color:var(--accent);background:var(--accent-soft)}
+.chip:disabled{cursor:default}
+.zone-label{font-size:var(--fs-s);color:var(--muted)}
+.order{display:flex;flex-direction:column;gap:8px;max-width:62ch}
+.err{color:var(--bad);font-size:var(--fs-s)}
+.fb{display:flex;flex-direction:column;gap:4px;padding:14px 16px;border:1px solid var(--line);border-radius:var(--r-control);background:var(--bg);max-width:62ch}
+.fb-good{border-color:var(--good)}
+.fb-bad{border-color:var(--bad)}
+.fb-title{display:flex;align-items:center;gap:8px;font-weight:600}
+.fb-good .fb-title{color:var(--good)}
+.fb-bad .fb-title{color:var(--bad)}
+.fb p{color:var(--ink-2)}
+
+.ladder{padding:20px;display:flex;flex-direction:column;gap:12px;position:sticky;top:calc(env(safe-area-inset-top,0px) + 24px)}
+.ladder-head{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.ladder-head h2{font-size:var(--fs-m)}
+.lvl-now{font-size:var(--fs-s);color:var(--ink-2)}
+.ladder p{font-size:var(--fs-s);color:var(--muted)}
+.key{display:flex;gap:16px;font-size:var(--fs-xs);color:var(--muted)}
+.key span{display:inline-flex;align-items:center;gap:6px}
+svg.trace{display:block;width:100%;height:auto;overflow:visible}
+.trace .ax{fill:var(--muted);font:400 11px var(--font-body)}
+.trace .grid{stroke:var(--line);stroke-width:1}
+.trace .path{fill:none;stroke:var(--accent);stroke-width:2;stroke-linejoin:round;stroke-linecap:round}
+.trace .m-good{fill:var(--good);stroke:var(--surface);stroke-width:2}
+.trace .m-bad{fill:var(--surface);stroke:var(--bad);stroke-width:2}
+.trace .m-now{fill:var(--surface);stroke:var(--muted);stroke-width:1.5;stroke-dasharray:2 2}
+.trace .m-rest{fill:var(--line)}
+.trace .hit{fill:transparent;cursor:default}
+svg.spark{display:block;width:112px;height:28px}
+svg.spark .path{stroke-width:1.5}
+svg.spark .m-good{stroke:none}
+svg.spark .m-bad{stroke-width:1.25}
+
+/* result */
+.result{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr);gap:24px;align-items:start}
+.score{padding:24px;display:flex;flex-direction:column;gap:6px}
+.score-big{font:600 var(--fs-hero)/1 var(--font-display);letter-spacing:-.02em;font-variant-numeric:tabular-nums}
+.score-sub{color:var(--ink-2)}
+.score-level{margin-top:10px;padding-top:12px;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:2px}
+.score-level b{font-size:var(--fs-l);font-weight:600}
+.panel-pad{padding:20px 24px;display:flex;flex-direction:column;gap:12px}
+
+/* pay */
+.pay{max-width:560px;padding:24px;display:flex;flex-direction:column;gap:18px}
+.pay dl{display:grid;grid-template-columns:max-content 1fr;gap:6px 20px;margin:0}
+.pay dt{color:var(--muted)}
+.pay dd{margin:0;font-weight:500}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-size:var(--fs-s);color:var(--ink-2)}
+.done{display:flex;flex-direction:column;gap:8px}
+.done-title{display:flex;align-items:center;gap:8px;font-weight:600;color:var(--good)}
+
+.api-method{font:600 var(--fs-xs)/1 ui-monospace,"SFMono-Regular",Menlo,monospace;color:var(--ink-2)}
+code{font:400 14px ui-monospace,"SFMono-Regular",Menlo,monospace}
+
+#tip{position:fixed;z-index:10;pointer-events:none;max-width:240px;padding:6px 10px;border-radius:var(--r-control);background:var(--ink);color:var(--bg);font-size:var(--fs-xs);line-height:1.4}
+
+@media (max-width:1100px){
+  .take{grid-template-columns:1fr}
+  .ladder{position:static;order:-1}
+  .result{grid-template-columns:1fr}
+}
+@media (max-width:860px){
+  .app{grid-template-columns:1fr}
+  .side{position:static;height:auto;border-right:0;border-bottom:1px solid var(--line);gap:14px}
+  .roles{flex-direction:row}
+  .roles button{text-align:center;padding:0 6px}
+  .roles button + button{border-top:0;border-left:1px solid var(--line-strong)}
+  .nav{flex-direction:row;overflow-x:auto}
+  .nav button{flex:none}
+  .who{margin-top:0;flex-direction:row;flex-wrap:wrap;align-items:center;justify-content:space-between}
+  .main{padding-block:24px 48px;padding-inline:16px}
+  .qcard{padding:20px}
+  .test-row{grid-template-columns:1fr;padding:18px 16px}
+  .match{grid-template-columns:1fr;gap:6px}
+  .match-term:not(:first-child){margin-top:8px}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+
+<div class="app">
+  <aside class="side">
+    <div class="brand">
+      <span class="brand-name">Зачёт</span>
+      <span class="brand-note">Демо платформы тестов для учебного центра. Ученики и результаты вымышлены.</span>
+    </div>
+    <div class="side-block">
+      <span class="side-label" id="roles-label">Смотреть как</span>
+      <div class="roles" role="group" aria-labelledby="roles-label">
+        <button type="button" id="role-student" data-act="role" data-role="student">Ученик</button>
+        <button type="button" id="role-teacher" data-act="role" data-role="teacher">Преподаватель</button>
+        <button type="button" id="role-admin" data-act="role" data-role="admin">Админ</button>
+      </div>
+    </div>
+    <nav class="nav" id="nav" aria-label="Разделы"></nav>
+    <div class="who">
+      <span id="who"></span>
+      <button type="button" class="linkish" id="reset" data-act="reset">Сбросить демо</button>
+    </div>
+  </aside>
+  <main class="main" id="main"></main>
+</div>
+<div id="tip" hidden></div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script>
+(function(){
+"use strict";
+
+/* ---------- content ---------- */
+const LEVELS = {1:"базовый", 2:"средний", 3:"продвинутый"};
+const TYPES = {single:"Один ответ", multi:"Несколько ответов", text:"Ответ текстом", match:"Соответствие", order:"Порядок слов"};
+
+const BANK = [
+  {id:1, level:1, type:"single", prompt:"She ___ a teacher.", options:["are","is","am","be"], answer:1},
+  {id:2, level:1, type:"multi", prompt:"Какие формы глагола to be используются в настоящем времени?", options:["am","was","is","are","been"], answer:[0,2,3]},
+  {id:3, level:1, type:"text", prompt:"Переведите на английский одним словом: «книга».", answer:["book","a book"]},
+  {id:4, level:1, type:"match", prompt:"Соотнесите слово и перевод.", pairs:[["dog","собака"],["house","дом"],["water","вода"],["window","окно"]]},
+  {id:5, level:1, type:"order", prompt:"Составьте предложение «Я люблю зелёный чай».", words:["I","like","green","tea"]},
+  {id:6, level:2, type:"single", prompt:"They ___ to the cinema yesterday.", options:["go","have gone","went","gone"], answer:2},
+  {id:7, level:2, type:"multi", prompt:"Отметьте неправильные глаголы.", options:["take","play","write","open","buy"], answer:[0,2,4]},
+  {id:8, level:2, type:"text", prompt:"Вставьте предлог: I was born ___ 1998.", answer:["in"]},
+  {id:9, level:2, type:"match", prompt:"Соотнесите глагол и его форму в Past Simple.", pairs:[["see","saw"],["bring","brought"],["think","thought"],["begin","began"]]},
+  {id:10, level:2, type:"order", prompt:"Составьте предложение «Я никогда не был в Лондоне».", words:["I","have","never","been","to","London"]},
+  {id:11, level:3, type:"single", prompt:"If I ___ you, I would take this job.", options:["am","were","will be","have been"], answer:1},
+  {id:12, level:3, type:"multi", prompt:"В каких предложениях Present Perfect использован верно?", options:["I have seen this film twice.","I have seen him yesterday.","She has just left.","We have lived here since 2015."], answer:[0,2,3]},
+  {id:13, level:3, type:"text", prompt:"Поставьте глагол в страдательный залог: The letter ___ (send) tomorrow.", answer:["will be sent"]},
+  {id:14, level:3, type:"match", prompt:"Соотнесите фразовый глагол и значение.", pairs:[["give up","бросить, прекратить"],["look after","присматривать"],["put off","откладывать"],["turn down","отклонять"]]},
+  {id:15, level:3, type:"order", prompt:"Составьте предложение «К понедельнику она закончит отчёт».", words:["she","will","have","finished","the","report","by","Monday"]}
+];
+const Q = Object.fromEntries(BANK.map(q => [q.id, q]));
+
+const TESTS = [
+  {id:"diag", title:"Английский: диагностика уровня", note:"Определяет, в какую группу записать ученика. Сложность подстраивается под ответы.", price:0, len:7, minutes:"10–15 минут"},
+  {id:"mod2", title:"Английский: итоговый тест модуля 2", note:"Для учеников группы Pre-Intermediate. После теста преподаватель видит разбор по каждому вопросу.", price:490, len:7, minutes:"10–15 минут"}
+];
+const TEST = Object.fromEntries(TESTS.map(t => [t.id, t]));
+
+const ME = "u-anna";
+const SEED_USERS = [
+  {id:"u-anna", name:"Анна Смирнова", email:"anna.smirnova@example.com", role:"student"},
+  {id:"u-igor", name:"Игорь Волков", email:"i.volkov@example.com", role:"student", ability:1.4},
+  {id:"u-maria", name:"Мария Кузнецова", email:"m.kuznetsova@example.com", role:"student", ability:2.7},
+  {id:"u-daniil", name:"Даниил Орлов", email:"d.orlov@example.com", role:"student", ability:2.0},
+  {id:"u-sofia", name:"Софья Белова", email:"s.belova@example.com", role:"student", ability:3.2},
+  {id:"u-timur", name:"Тимур Галиев", email:"t.galiev@example.com", role:"student", ability:1.0},
+  {id:"u-kate", name:"Екатерина Лебедева", email:"e.lebedeva@example.com", role:"student", ability:2.3},
+  {id:"u-nat", name:"Наталья Громова", email:"n.gromova@example.com", role:"teacher"},
+  {id:"u-pavel", name:"Павел Ильин", email:"p.ilin@example.com", role:"admin"}
+];
+const ROLE_NAMES = {student:"Ученик", teacher:"Преподаватель", admin:"Администратор"};
+
+/* ---------- adaptive engine ---------- */
+function clampLevel(l){ return Math.max(1, Math.min(3, l)); }
+function pickQuestion(level, used, rnd){
+  for (const d of [0,-1,1,-2,2]) {
+    const pool = BANK.filter(q => q.level === level + d && !used.has(q.id));
+    if (pool.length) return pool[Math.floor(rnd() * pool.length)];
+  }
+  return null;
+}
+function nextLevel(level, correct){ return clampLevel(level + (correct ? 1 : -1)); }
+function pointsOf(items){ return items.reduce((s, it) => s + (it.correct ? it.level : 0), 0); }
+function correctOf(items){ return items.filter(it => it.correct).length; }
+
+/* ---------- seeded history ---------- */
+function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function simulate(rnd, ability, len){
+  let level = 2; const items = []; const used = new Set();
+  for (let i = 0; i < len; i++) {
+    const q = pickQuestion(level, used, rnd); used.add(q.id);
+    const p = 1 / (1 + Math.exp(-2.4 * (ability - q.level + 0.4)));
+    const correct = rnd() < p;
+    items.push({qid:q.id, level:q.level, correct});
+    level = nextLevel(level, correct);
+  }
+  return {items, finalLevel:level};
+}
+const SEED = (function(){
+  const rnd = mulberry32(20260925);
+  const plan = [
+    ["u-igor","diag","2026-09-14"],["u-timur","diag","2026-09-15"],["u-maria","diag","2026-09-15"],
+    ["u-daniil","diag","2026-09-16"],["u-sofia","diag","2026-09-17"],["u-kate","diag","2026-09-18"],
+    ["u-maria","mod2","2026-09-21"],["u-sofia","mod2","2026-09-22"],["u-daniil","mod2","2026-09-23"],["u-kate","mod2","2026-09-24"]
+  ];
+  const attempts = plan.map(([userId, testId, date], i) => {
+    const u = SEED_USERS.find(x => x.id === userId);
+    return Object.assign({id:"s" + i, userId, testId, date}, simulate(rnd, u.ability, TEST[testId].len));
+  });
+  const payments = plan.filter(p => TEST[p[1]].price).map(([userId, testId, date], i) => ({id:"p" + i, userId, testId, date, amount:TEST[testId].price}));
+  return {attempts, payments};
+})();
+
+/* ---------- state ---------- */
+const STORE_KEY = "zachet-demo-v1";
+function loadLive(){
+  try { const raw = localStorage.getItem(STORE_KEY); if (raw) return JSON.parse(raw); } catch (e) {}
+  return {attempts:[], payments:[], roles:{}};
+}
+function saveLive(){ try { localStorage.setItem(STORE_KEY, JSON.stringify(live)); } catch (e) {} }
+let live = loadLive();
+
+const state = {role:"student", view:"tests", run:null, pay:null, lastResult:null, filter:"all"};
+const VIEWS = {
+  student:[["tests","Тесты"],["mine","Мои результаты"]],
+  teacher:[["results","Результаты"],["bank","Банк вопросов"],["api","API для приложения"]],
+  admin:[["users","Пользователи"],["payments","Платежи"]]
+};
+
+function users(){ return SEED_USERS.map(u => Object.assign({}, u, live.roles[u.id] ? {role:live.roles[u.id]} : {})); }
+function userById(id){ return users().find(u => u.id === id); }
+function allAttempts(){ return SEED.attempts.concat(live.attempts); }
+function allPayments(){ return SEED.payments.concat(live.payments); }
+function owns(userId, testId){ return !TEST[testId].price || allPayments().some(p => p.userId === userId && p.testId === testId); }
+
+/* ---------- helpers ---------- */
+const esc = s => String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const today = () => new Date().toISOString().slice(0,10);
+const fmtDate = d => new Date(d + "T12:00:00").toLocaleDateString("ru-RU", {day:"numeric", month:"short"});
+const rub = n => n.toLocaleString("ru-RU") + " ₽";
+function plural(n, one, few, many){ const a = n % 10, b = n % 100; return (a === 1 && b !== 11) ? one : (a >= 2 && a <= 4 && (b < 12 || b > 14)) ? few : many; }
+function shuffle(arr){ const a = arr.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; }
+const norm = s => String(s).toLowerCase().replace(/[.!?]+$/,"").replace(/\s+/g," ").trim();
+const sentence = words => { const s = words.join(" "); return s.charAt(0).toUpperCase() + s.slice(1) + "."; };
+
+const ICON_OK = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M3 8.5l3.2 3L13 4.5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+const ICON_NO = '<svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><path d="M4 4l8 8M12 4l-8 8" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const mark = ok => ok ? '<span class="mark mark-good">' + ICON_OK + 'Верно</span>' : '<span class="mark mark-bad">' + ICON_NO + 'Неверно</span>';
+
+function correctText(q){
+  if (q.type === "single") return q.options[q.answer];
+  if (q.type === "multi") return q.answer.map(i => q.options[i]).join(", ");
+  if (q.type === "text") return q.answer[0];
+  if (q.type === "match") return q.pairs.map(p => p[0] + " — " + p[1]).join("; ");
+  return sentence(q.words);
+}
+
+/* ---------- difficulty ladder chart ---------- */
+function trace(items, total, opts){
+  opts = opts || {};
+  const mini = !!opts.mini;
+  const W = mini ? 112 : 340, H = mini ? 28 : 138;
+  const L = mini ? 4 : 86, R = mini ? 4 : 8, T = mini ? 4 : 10, B = mini ? 4 : 28;
+  const n = Math.max(total, items.length);
+  const cw = (W - L - R) / n;
+  const y = lv => T + (3 - lv) * (H - T - B) / 2;
+  let out = '<svg class="' + (mini ? "trace spark" : "trace") + '" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(opts.label || "Как менялась сложность вопросов") + '">';
+  if (!mini) {
+    for (const lv of [3,2,1]) {
+      out += '<line class="grid" x1="' + L + '" x2="' + (W - R) + '" y1="' + y(lv) + '" y2="' + y(lv) + '"/>';
+      out += '<text class="ax" x="' + (L - 10) + '" y="' + (y(lv) + 4) + '" text-anchor="end">' + LEVELS[lv] + '</text>';
+    }
+    for (let i = 0; i < n; i++) out += '<text class="ax" x="' + (L + i * cw + cw / 2) + '" y="' + (H - 8) + '" text-anchor="middle">' + (i + 1) + '</text>';
+  }
+  let d = "";
+  items.forEach((it, i) => { const x0 = L + i * cw, yy = y(it.level); d += (i ? "L" : "M") + x0.toFixed(1) + "," + yy + "H" + (x0 + cw).toFixed(1); });
+  if (d) out += '<path class="path" d="' + d + '"/>';
+  const r = mini ? 2.4 : 5;
+  items.forEach((it, i) => {
+    const cx = (L + i * cw + cw / 2).toFixed(1), cy = y(it.level);
+    const cls = it.correct === true ? "m-good" : it.correct === false ? "m-bad" : "m-now";
+    const tip = "Вопрос " + (i + 1) + " · " + LEVELS[it.level] + " уровень · " + (it.correct === true ? "верно" : it.correct === false ? "неверно" : "отвечает сейчас");
+    out += '<circle class="' + cls + '" cx="' + cx + '" cy="' + cy + '" r="' + r + '"/>';
+    if (!mini) out += '<circle class="hit" cx="' + cx + '" cy="' + cy + '" r="12" data-tip="' + esc(tip) + '"/>';
+  });
+  if (!mini) for (let i = items.length; i < n; i++) out += '<circle class="m-rest" cx="' + (L + i * cw + cw / 2).toFixed(1) + '" cy="' + (H - B + 8) + '" r="2"/>';
+  return out + "</svg>";
+}
+const KEY = '<div class="key"><span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4.5" fill="var(--good)"/></svg>верно</span><span><svg width="12" height="12" aria-hidden="true"><circle cx="6" cy="6" r="4" fill="var(--surface)" stroke="var(--bad)" stroke-width="2"/></svg>неверно</span></div>';
+
+/* ---------- views ---------- */
+const main = document.getElementById("main");
+
+function head(title, lead, aside){
+  return '<div class="head"><div class="head-text"><h1>' + esc(title) + '</h1>' + (lead ? '<p class="lead">' + lead + '</p>' : "") + '</div>' + (aside || "") + '</div>';
+}
+
+function viewTests(){
+  const rows = TESTS.map(t => {
+    const has = owns(ME, t.id);
+    const tried = live.attempts.filter(a => a.testId === t.id).length;
+    let right;
+    if (!t.price) right = '<span class="price">Бесплатно</span><button class="btn btn-primary" data-act="start" data-test="' + t.id + '">Начать тест</button>';
+    else if (has) right = '<span class="owned">Оплачен</span><button class="btn btn-primary" data-act="start" data-test="' + t.id + '">Начать тест</button>';
+    else right = '<span class="price">' + rub(t.price) + '</span><button class="btn btn-primary" data-act="buy" data-test="' + t.id + '">Купить доступ</button>';
+    return '<div class="test-row"><div class="test-info"><h2>' + esc(t.title) + '</h2><p class="lead">' + esc(t.note) + '</p><p class="test-meta">' + t.len + ' вопросов · адаптивный · ' + t.minutes + (tried ? ' · вы проходили ' + tried + ' ' + plural(tried, "раз", "раза", "раз") : "") + '</p></div><div class="test-buy">' + right + '</div></div>';
+  }).join("");
+  return head("Тесты", "Правильный ответ ведёт к вопросу сложнее, ошибка — к вопросу проще. Так за 7 вопросов тест находит реальный уровень ученика.") +
+    '<div class="panel tests">' + rows + '</div>';
+}
+
+function viewPay(){
+  const t = TEST[state.pay.testId];
+  if (state.pay.done) {
+    return head("Доступ открыт", "") + '<div class="panel pay"><div class="done"><span class="done-title">' + ICON_OK + 'Оплата прошла</span><p>Чек отправлен на ' + esc(state.pay.email) + '. Тест «' + esc(t.title) + '» уже в вашем списке.</p></div><div class="row"><button class="btn btn-primary" data-act="start" data-test="' + t.id + '">Начать тест</button><button class="btn" data-act="nav" data-view="tests">К списку тестов</button></div></div>';
+  }
+  return head("Оплата теста", "В рабочей версии здесь откроется платёжная форма банка. Чек по 54-ФЗ приходит на почту автоматически, доступ открывается сразу после оплаты.") +
+    '<form class="panel pay" id="pay-form"><dl><dt>Тест</dt><dd>' + esc(t.title) + '</dd><dt>Сумма</dt><dd>' + rub(t.price) + '</dd></dl>' +
+    '<div class="field"><label for="pay-email">Почта для чека</label><input class="inp" id="pay-email" type="email" required value="' + esc(userById(ME).email) + '"></div>' +
+    '<div class="row"><button class="btn btn-primary" type="submit">Оплатить ' + rub(t.price) + ' (демо)</button><button class="btn" type="button" data-act="nav" data-view="tests">Отмена</button></div>' +
+    '<p class="note">Демо: деньги не списываются, данные карты не запрашиваются.</p></form>';
+}
+
+function renderAnswerUI(q, cur, locked){
+  const dis = locked ? " disabled" : "";
+  if (q.type === "single" || q.type === "multi") {
+    const kind = q.type === "single" ? "radio" : "checkbox";
+    return '<div class="opts">' + q.options.map((o, i) => '<label class="opt"><input type="' + kind + '" name="ans" value="' + i + '"' + (cur.sel.includes(i) ? " checked" : "") + dis + '><span>' + esc(o) + '</span></label>').join("") + '</div>';
+  }
+  if (q.type === "text") return '<div class="field"><label for="ans-text">Ваш ответ</label><input class="inp" id="ans-text" type="text" autocomplete="off" spellcheck="false" value="' + esc(cur.text) + '"' + dis + '></div>';
+  if (q.type === "match") {
+    return '<div class="match">' + q.pairs.map((p, i) => '<span class="match-term" id="mt-' + i + '">' + esc(p[0]) + '</span><select class="inp" id="match-' + i + '" data-match="' + i + '" aria-labelledby="mt-' + i + '"' + dis + '><option value="">Выберите перевод</option>' + cur.rights.map(r => '<option' + (cur.match[i] === r ? " selected" : "") + '>' + esc(r) + '</option>').join("") + '</select>').join("") + '</div>';
+  }
+  const built = cur.built.map(i => '<button type="button" class="chip chip-in" data-act="unpick" data-i="' + i + '"' + dis + '>' + esc(cur.pool[i]) + '</button>').join("");
+  const pool = cur.pool.map((w, i) => cur.built.includes(i) ? "" : '<button type="button" class="chip" data-act="pick" data-i="' + i + '"' + dis + '>' + esc(w) + '</button>').join("");
+  return '<div class="order"><span class="zone-label">Ваше предложение</span><div class="zone zone-built">' + (built || '<span class="zone-empty">Нажимайте на слова ниже по порядку</span>') + '</div><span class="zone-label">Слова</span><div class="zone">' + pool + '</div></div>';
+}
+
+function viewTake(){
+  const run = state.run, t = TEST[run.testId], q = Q[run.cur.qid];
+  const n = run.items.length + 1;
+  const locked = !!run.cur.result;
+  let fb = "";
+  if (locked) {
+    const ok = run.cur.result.correct, before = q.level, after = run.level;
+    const move = after > before ? "Следующий вопрос будет сложнее." : after < before ? "Следующий вопрос будет проще." : ok ? "Это уже самый сложный уровень, остаёмся на нём." : "Это уже базовый уровень, остаёмся на нём.";
+    fb = '<div class="fb ' + (ok ? "fb-good" : "fb-bad") + '" role="status"><span class="fb-title">' + (ok ? ICON_OK + "Верно" : ICON_NO + "Неверно") + '</span>' + (ok ? "" : '<p>Правильный ответ: ' + esc(correctText(q)) + '</p>') + (run.items.length < t.len ? '<p>' + move + '</p>' : "") + '</div>';
+  }
+  const isLast = run.items.length >= t.len;
+  const btn = locked
+    ? '<button class="btn btn-primary" type="button" data-act="next">' + (isLast ? "Посмотреть результат" : "Следующий вопрос") + '</button>'
+    : '<button class="btn btn-primary" type="submit">Ответить</button>' + (q.type === "order" ? '<button class="btn" type="button" data-act="clear-order">Собрать заново</button>' : "");
+  const shown = run.items.concat(locked ? [] : [{level:q.level, correct:null}]);
+  const lvlNow = locked ? run.level : q.level;
+  return head(t.title, "") +
+    '<div class="take"><form class="panel qcard" id="q-form" novalidate><div class="qtop"><span>Вопрос ' + Math.min(n - (locked ? 1 : 0), t.len) + ' из ' + t.len + ' · ' + TYPES[q.type] + '</span><span>Уровень вопроса: ' + LEVELS[q.level] + '</span></div>' +
+    '<p class="qprompt">' + esc(q.prompt) + '</p>' + renderAnswerUI(q, run.cur, locked) +
+    '<p class="err" id="q-err" hidden></p>' + fb + '<div class="row">' + btn + '</div></form>' +
+    '<aside class="panel ladder"><div class="ladder-head"><h2>Лесенка сложности</h2><span class="lvl-now">сейчас: ' + LEVELS[lvlNow] + '</span></div>' +
+    trace(shown, t.len) + KEY + '<p>Каждая ступень — вопрос. Верный ответ поднимает на уровень выше, ошибка опускает ниже.</p></aside></div>';
+}
+
+function reviewTable(att){
+  return '<div class="tbl-wrap"><table><thead><tr><th class="num">№</th><th>Вопрос</th><th>Уровень</th><th>Ответ ученика</th><th>Результат</th></tr></thead><tbody>' +
+    att.items.map((it, i) => { const q = Q[it.qid]; return '<tr><td class="num">' + (i + 1) + '</td><td>' + esc(q.prompt) + '<span class="cell-sub">' + TYPES[q.type] + (it.correct ? "" : " · верно: " + esc(correctText(q))) + '</span></td><td class="nowrap">' + LEVELS[it.level] + '</td><td>' + esc(it.answerText || "—") + '</td><td>' + mark(it.correct) + '</td></tr>'; }).join("") +
+    '</tbody></table></div>';
+}
+
+function viewResult(){
+  const a = state.lastResult, t = TEST[a.testId];
+  const c = correctOf(a.items), pts = pointsOf(a.items);
+  return head("Результат", esc(t.title) + " · " + fmtDate(a.date), '<div class="row"><button class="btn" data-act="nav" data-view="tests">К тестам</button><button class="btn btn-primary" data-act="start" data-test="' + t.id + '">Пройти ещё раз</button></div>') +
+    '<div class="result"><div class="panel score"><span class="score-big">' + c + ' из ' + a.items.length + '</span><span class="score-sub">верных ответов, ' + pts + ' ' + plural(pts, "балл", "балла", "баллов") + '</span><div class="score-level"><span class="note">Итоговый уровень</span><b>' + LEVELS[a.finalLevel] + '</b></div></div>' +
+    '<div class="panel panel-pad"><div class="ladder-head"><h2>Лесенка сложности</h2></div>' + trace(a.items, a.items.length) + KEY + '<p class="note">Баллы: верный ответ на базовый вопрос — 1, на средний — 2, на продвинутый — 3.</p></div></div>' +
+    '<h2>Разбор ответов</h2>' + reviewTable(a);
+}
+
+function viewMine(){
+  const mine = live.attempts.slice().reverse();
+  if (!mine.length) return head("Мои результаты", "Здесь появятся пройденные тесты.") + '<div class="panel panel-pad"><p>Вы ещё не проходили тесты в этом демо.</p><div class="row"><button class="btn btn-primary" data-act="nav" data-view="tests">Выбрать тест</button></div></div>';
+  return head("Мои результаты", "") + '<div class="tbl-wrap"><table><thead><tr><th>Тест</th><th>Дата</th><th class="num">Верных</th><th class="num">Баллы</th><th>Уровень</th><th>Лесенка</th><th></th></tr></thead><tbody>' +
+    mine.map(a => '<tr><td>' + esc(TEST[a.testId].title) + '</td><td class="nowrap">' + fmtDate(a.date) + '</td><td class="num">' + correctOf(a.items) + ' из ' + a.items.length + '</td><td class="num">' + pointsOf(a.items) + '</td><td class="nowrap">' + LEVELS[a.finalLevel] + '</td><td>' + trace(a.items, a.items.length, {mini:true}) + '</td><td><button class="btn" data-act="open" data-id="' + a.id + '">Разбор</button></td></tr>').join("") +
+    '</tbody></table></div>';
+}
+
+function filtered(){ return allAttempts().filter(a => state.filter === "all" || a.testId === state.filter).sort((x, y) => y.date.localeCompare(x.date)); }
+function questionStats(list){
+  const s = {}; BANK.forEach(q => s[q.id] = {shown:0, ok:0});
+  list.forEach(a => a.items.forEach(it => { s[it.qid].shown++; if (it.correct) s[it.qid].ok++; }));
+  return s;
+}
+
+function viewResults(){
+  const list = filtered();
+  const avg = list.length ? (list.reduce((s, a) => s + pointsOf(a.items), 0) / list.length).toFixed(1).replace(".", ",") : "—";
+  const top = list.filter(a => a.finalLevel === 3).length;
+  const filter = '<div class="row"><label class="note" for="flt">Тест</label><select class="inp" id="flt" data-act="filter" style="width:auto"><option value="all">Все тесты</option>' + TESTS.map(t => '<option value="' + t.id + '"' + (state.filter === t.id ? " selected" : "") + '>' + esc(t.title) + '</option>').join("") + '</select><button class="btn btn-primary" data-act="export">Выгрузить в Excel</button></div>';
+  return head("Результаты учеников", "Все попытки с разбором по вопросам. Выгрузка в Excel — два листа: попытки и статистика по вопросам.", filter) +
+    '<p class="note" id="export-status" role="status"></p>' +
+    '<div class="summary"><span>Попыток: <b>' + list.length + '</b></span><span>Средний балл: <b>' + avg + '</b></span><span>Дошли до продвинутого уровня: <b>' + top + '</b></span></div>' +
+    '<div class="tbl-wrap"><table><thead><tr><th>Ученик</th><th>Тест</th><th>Дата</th><th class="num">Верных</th><th class="num">Баллы</th><th>Уровень</th><th>Лесенка</th></tr></thead><tbody>' +
+    list.map(a => { const u = userById(a.userId); return '<tr><td>' + esc(u.name) + (a.userId === ME ? '<span class="cell-sub">ваша попытка из демо</span>' : "") + '</td><td>' + esc(TEST[a.testId].title) + '</td><td class="nowrap">' + fmtDate(a.date) + '</td><td class="num">' + correctOf(a.items) + ' из ' + a.items.length + '</td><td class="num">' + pointsOf(a.items) + '</td><td class="nowrap">' + LEVELS[a.finalLevel] + '</td><td>' + trace(a.items, a.items.length, {mini:true, label:"Лесенка: " + a.items.map(i => i.level).join(", ")}) + '</td></tr>'; }).join("") +
+    '</tbody></table></div>';
+}
+
+function viewBank(){
+  const s = questionStats(allAttempts());
+  return head("Банк вопросов", "15 вопросов, по 5 на каждый уровень, пять типов. Процент верных считается по всем попыткам и помогает найти слишком лёгкие и слишком трудные вопросы.") +
+    '<div class="tbl-wrap"><table><thead><tr><th class="num">№</th><th>Вопрос</th><th>Тип</th><th>Уровень</th><th class="num">Показан</th><th class="num">Верно</th></tr></thead><tbody>' +
+    BANK.map(q => { const st = s[q.id]; return '<tr><td class="num">' + q.id + '</td><td>' + esc(q.prompt) + '<span class="cell-sub">Ответ: ' + esc(correctText(q)) + '</span></td><td class="nowrap">' + TYPES[q.type] + '</td><td class="nowrap">' + LEVELS[q.level] + '</td><td class="num">' + st.shown + '</td><td class="num">' + (st.shown ? Math.round(st.ok / st.shown * 100) + "%" : "—") + '</td></tr>'; }).join("") +
+    '</tbody></table></div>';
+}
+
+function viewApi(){
+  const eps = [
+    ["POST","/api/auth/token","Вход по почте и паролю, выдаёт токен"],
+    ["GET","/api/tests","Тесты, доступные ученику, с ценой и статусом оплаты"],
+    ["POST","/api/tests/{id}/attempts","Начать попытку"],
+    ["GET","/api/attempts/{id}/next","Следующий вопрос, выбранный по текущему уровню"],
+    ["POST","/api/attempts/{id}/answers","Отправить ответ; в ответе — верно или нет и новый уровень"],
+    ["GET","/api/attempts/{id}/result","Итог попытки с разбором"],
+    ["POST","/api/payments","Создать платёж, вернуть ссылку на оплату"],
+    ["POST","/api/payments/webhook","Уведомление от банка: открывает доступ к тесту"],
+    ["GET","/api/reports/attempts.xlsx","Выгрузка результатов для преподавателя"]
+  ];
+  return head("API для мобильного приложения", "Сайт и приложение работают через одно API, поэтому приложение получает всё то же: адаптивные тесты, оплату, результаты. Документация (OpenAPI) собирается автоматически.") +
+    '<div class="tbl-wrap"><table><thead><tr><th>Метод</th><th>Адрес</th><th>Что делает</th></tr></thead><tbody>' +
+    eps.map(e => '<tr><td><span class="api-method">' + e[0] + '</span></td><td class="nowrap"><code>' + esc(e[1]) + '</code></td><td>' + esc(e[2]) + '</td></tr>').join("") +
+    '</tbody></table></div>';
+}
+
+function viewUsers(){
+  return head("Пользователи", "Администратор назначает роли. Преподаватель видит результаты и банк вопросов, ученик — свои тесты.") +
+    '<div class="tbl-wrap"><table><thead><tr><th>Имя</th><th>Почта</th><th>Роль</th><th class="num">Попыток</th></tr></thead><tbody>' +
+    users().map(u => '<tr><td>' + esc(u.name) + '</td><td>' + esc(u.email) + '</td><td><select class="inp" id="role-of-' + u.id + '" data-act="setrole" data-id="' + u.id + '" aria-label="Роль: ' + esc(u.name) + '" style="width:auto">' + Object.keys(ROLE_NAMES).map(r => '<option value="' + r + '"' + (u.role === r ? " selected" : "") + '>' + ROLE_NAMES[r] + '</option>').join("") + '</select></td><td class="num">' + allAttempts().filter(a => a.userId === u.id).length + '</td></tr>').join("") +
+    '</tbody></table></div>';
+}
+
+function viewPayments(){
+  const list = allPayments().slice().sort((x, y) => y.date.localeCompare(x.date));
+  const sum = list.reduce((s, p) => s + p.amount, 0);
+  return head("Платежи", "Каждая оплата сразу открывает доступ к тесту, чек уходит покупателю на почту.") +
+    '<div class="summary"><span>Оплат: <b>' + list.length + '</b></span><span>Сумма: <b>' + rub(sum) + '</b></span></div>' +
+    '<div class="tbl-wrap"><table><thead><tr><th>Дата</th><th>Ученик</th><th>Тест</th><th class="num">Сумма</th><th>Чек</th></tr></thead><tbody>' +
+    list.map(p => '<tr><td class="nowrap">' + fmtDate(p.date) + '</td><td>' + esc(userById(p.userId).name) + '</td><td>' + esc(TEST[p.testId].title) + '</td><td class="num">' + rub(p.amount) + '</td><td><span class="mark mark-good">' + ICON_OK + 'Отправлен</span></td></tr>').join("") +
+    '</tbody></table></div>';
+}
+
+/* ---------- render ---------- */
+function render(){
+  document.querySelectorAll(".roles button").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.role === state.role)));
+  const navView = ({take:"tests", pay:"tests", result: state.role === "student" ? "mine" : null})[state.view] || state.view;
+  document.getElementById("nav").innerHTML = VIEWS[state.role].map(([id, label]) => {
+    const count = id === "mine" ? live.attempts.length : id === "results" ? allAttempts().length : id === "payments" ? allPayments().length : null;
+    return '<button type="button" data-act="nav" data-view="' + id + '"' + (navView === id ? ' aria-current="page"' : "") + '><span>' + label + '</span>' + (count ? '<span class="count">' + count + '</span>' : "") + '</button>';
+  }).join("");
+  const who = {student:userById(ME), teacher:userById("u-nat"), admin:userById("u-pavel")}[state.role];
+  document.getElementById("who").innerHTML = "Вы: <strong>" + esc(who.name) + "</strong>";
+  const v = {tests:viewTests, pay:viewPay, take:viewTake, result:viewResult, mine:viewMine, results:viewResults, bank:viewBank, api:viewApi, users:viewUsers, payments:viewPayments}[state.view];
+  main.innerHTML = v();
+}
+function go(view){ state.view = view; render(); window.scrollTo(0, 0); }
+
+/* ---------- test run ---------- */
+function newCur(q){
+  const cur = {qid:q.id, sel:[], text:"", match:{}, built:[], result:null};
+  if (q.type === "match") cur.rights = shuffle(q.pairs.map(p => p[1]));
+  if (q.type === "order") { let p; do { p = shuffle(q.words); } while (p.join() === q.words.join()); cur.pool = p; }
+  return cur;
+}
+function startTest(testId){
+  const used = new Set();
+  const q = pickQuestion(2, used, Math.random);
+  state.run = {testId, level:2, items:[], used, cur:newCur(q)};
+  go("take");
+}
+function readAnswer(q, cur){
+  if (q.type === "single") { const el = main.querySelector('input[name="ans"]:checked'); cur.sel = el ? [Number(el.value)] : []; return cur.sel.length ? null : "Выберите вариант ответа."; }
+  if (q.type === "multi") { cur.sel = [...main.querySelectorAll('input[name="ans"]:checked')].map(el => Number(el.value)); return cur.sel.length ? null : "Отметьте хотя бы один вариант."; }
+  if (q.type === "text") { cur.text = main.querySelector("#ans-text").value; return norm(cur.text) ? null : "Введите ответ."; }
+  if (q.type === "match") { main.querySelectorAll("[data-match]").forEach(s => cur.match[s.dataset.match] = s.value); return q.pairs.every((p, i) => cur.match[i]) ? null : "Выберите пару для каждого слова."; }
+  return cur.built.length === q.words.length ? null : "Используйте все слова.";
+}
+function check(q, cur){
+  if (q.type === "single") return {correct: cur.sel[0] === q.answer, text: q.options[cur.sel[0]]};
+  if (q.type === "multi") { const a = cur.sel.slice().sort().join(), b = q.answer.slice().sort().join(); return {correct: a === b, text: cur.sel.map(i => q.options[i]).join(", ")}; }
+  if (q.type === "text") return {correct: q.answer.some(x => norm(x) === norm(cur.text)), text: cur.text.trim()};
+  if (q.type === "match") return {correct: q.pairs.every((p, i) => cur.match[i] === p[1]), text: q.pairs.map((p, i) => p[0] + " — " + cur.match[i]).join("; ")};
+  const words = cur.built.map(i => cur.pool[i]);
+  return {correct: norm(words.join(" ")) === norm(q.words.join(" ")), text: sentence(words)};
+}
+function submitAnswer(){
+  const run = state.run, q = Q[run.cur.qid];
+  const problem = readAnswer(q, run.cur);
+  const err = document.getElementById("q-err");
+  if (problem) { err.textContent = problem; err.hidden = false; return; }
+  const res = check(q, run.cur);
+  run.cur.result = res;
+  run.used.add(q.id);
+  run.items.push({qid:q.id, level:q.level, correct:res.correct, answerText:res.text});
+  run.level = nextLevel(run.level, res.correct);
+  render();
+  const next = main.querySelector('[data-act="next"]'); if (next) next.focus();
+}
+function nextStep(){
+  const run = state.run, t = TEST[run.testId];
+  if (run.items.length >= t.len) {
+    const att = {id:"a" + Date.now(), userId:ME, testId:run.testId, date:today(), items:run.items, finalLevel:run.level};
+    live.attempts.push(att); saveLive();
+    state.lastResult = att; state.run = null;
+    go("result"); return;
+  }
+  run.cur = newCur(pickQuestion(run.level, run.used, Math.random));
+  render();
+  const first = main.querySelector("#q-form input, #q-form select, #q-form .chip"); if (first) first.focus();
+}
+
+/* ---------- export ---------- */
+async function exportXlsx(){
+  const status = document.getElementById("export-status");
+  const say = t => { if (status) status.textContent = t; };
+  if (!window.XLSX) { say("Не загрузилась библиотека выгрузки. Обновите страницу и попробуйте ещё раз."); return; }
+  const list = filtered();
+  const attemptsRows = list.map(a => { const u = userById(a.userId); return {
+    "Ученик": u.name, "Почта": u.email, "Тест": TEST[a.testId].title, "Дата": a.date,
+    "Верных": correctOf(a.items), "Вопросов": a.items.length, "Баллы": pointsOf(a.items),
+    "Итоговый уровень": LEVELS[a.finalLevel], "Лесенка сложности": a.items.map(i => i.level).join(" → ")
+  }; });
+  const s = questionStats(list);
+  const qRows = BANK.map(q => ({"№": q.id, "Уровень": LEVELS[q.level], "Тип": TYPES[q.type], "Вопрос": q.prompt, "Показан": s[q.id].shown, "Верно": s[q.id].ok, "% верных": s[q.id].shown ? Math.round(s[q.id].ok / s[q.id].shown * 100) : ""}));
+  const wb = XLSX.utils.book_new();
+  const ws1 = XLSX.utils.json_to_sheet(attemptsRows); ws1["!cols"] = [{wch:22},{wch:26},{wch:40},{wch:12},{wch:8},{wch:9},{wch:7},{wch:16},{wch:26}];
+  const ws2 = XLSX.utils.json_to_sheet(qRows); ws2["!cols"] = [{wch:4},{wch:12},{wch:18},{wch:70},{wch:8},{wch:7},{wch:9}];
+  XLSX.utils.book_append_sheet(wb, ws1, "Попытки");
+  XLSX.utils.book_append_sheet(wb, ws2, "Вопросы");
+  const filename = "zachet-rezultaty-" + today() + ".xlsx";
+  let downloads = null;
+  try { if (window.claude && window.claude.use) downloads = await window.claude.use("downloads"); } catch (e) {}
+  if (downloads) {
+    try { await downloads.save({filename, data: XLSX.write(wb, {bookType:"xlsx", type:"array"})}); say("Файл " + filename + " сохранён."); }
+    catch (e) { say(e && e.code === "declined" ? "Сохранение отменено." : "Не получилось сохранить файл в этом окне."); }
+    return;
+  }
+  try { XLSX.writeFile(wb, filename); say("Файл " + filename + " скачан."); }
+  catch (e) { say("В этом окне скачивание файлов недоступно."); }
+}
+
+/* ---------- events ---------- */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if (!el) return;
+  const act = el.dataset.act;
+  if (act === "role") { state.role = el.dataset.role; state.run = null; go(VIEWS[state.role][0][0]); }
+  else if (act === "nav") go(el.dataset.view);
+  else if (act === "start") { if (owns(ME, el.dataset.test)) startTest(el.dataset.test); }
+  else if (act === "buy") { state.pay = {testId:el.dataset.test, done:false}; go("pay"); }
+  else if (act === "pick" || act === "unpick") {
+    const cur = state.run.cur, i = Number(el.dataset.i);
+    cur.built = act === "pick" ? cur.built.concat(i) : cur.built.filter(x => x !== i);
+    render();
+  }
+  else if (act === "clear-order") { state.run.cur.built = []; render(); }
+  else if (act === "next") nextStep();
+  else if (act === "open") { state.lastResult = live.attempts.find(a => a.id === el.dataset.id); go("result"); }
+  else if (act === "export") exportXlsx();
+  else if (act === "reset") { live = {attempts:[], payments:[], roles:{}}; saveLive(); state.run = null; state.filter = "all"; go(VIEWS[state.role][0][0]); }
+});
+document.addEventListener("change", e => {
+  const el = e.target;
+  if (el.dataset.act === "filter") { state.filter = el.value; render(); }
+  else if (el.dataset.act === "setrole") { live.roles[el.dataset.id] = el.value; saveLive(); render(); }
+  else if (el.dataset.match !== undefined && state.run) state.run.cur.match[el.dataset.match] = el.value;
+  else if (el.name === "ans" && state.run) { const q = Q[state.run.cur.qid]; readAnswer(q, state.run.cur); }
+});
+document.addEventListener("input", e => { if (e.target.id === "ans-text" && state.run) state.run.cur.text = e.target.value; });
+document.addEventListener("submit", e => {
+  e.preventDefault();
+  if (e.target.id === "q-form" && state.run && !state.run.cur.result) submitAnswer();
+  if (e.target.id === "pay-form") {
+    const email = document.getElementById("pay-email").value.trim();
+    if (!email || !email.includes("@")) { document.getElementById("pay-email").focus(); return; }
+    live.payments.push({id:"lp" + Date.now(), userId:ME, testId:state.pay.testId, date:today(), amount:TEST[state.pay.testId].price});
+    saveLive();
+    state.pay.done = true; state.pay.email = email; render();
+  }
+});
+
+/* tooltip for ladder markers */
+const tip = document.getElementById("tip");
+function placeTip(e){ tip.style.left = Math.min(e.clientX + 14, window.innerWidth - tip.offsetWidth - 8) + "px"; tip.style.top = (e.clientY + 16) + "px"; }
+document.addEventListener("pointerover", e => { const t = e.target.closest && e.target.closest("[data-tip]"); if (!t) { tip.hidden = true; return; } tip.textContent = t.dataset.tip; tip.hidden = false; placeTip(e); });
+document.addEventListener("pointermove", e => { if (!tip.hidden) placeTip(e); });
+
+const start = (location.hash || "").slice(1);
+if (VIEWS[start]) { state.role = start; state.view = VIEWS[start][0][0]; }
+render();
+})();
+</script>
