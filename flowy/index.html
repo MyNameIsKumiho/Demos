@@ -67,7 +67,9 @@ main{padding-block:28px 72px}
 .page{display:flex;flex-direction:column;gap:56px}
 
 /* art */
-canvas.art{display:block;width:100%;height:100%}
+img.art{display:block;width:100%;height:100%;object-fit:cover;background:var(--sand)}
+img.view-close{transform:scale(1.7);transform-origin:50% 40%}
+img.view-side{transform:scaleX(-1)}
 .art-box{position:relative;aspect-ratio:4/5;border-radius:var(--r-card);overflow:hidden;max-width:100%}
 
 /* hero */
@@ -78,7 +80,7 @@ canvas.art{display:block;width:100%;height:100%}
 .hero-facts{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:var(--fs-s);color:var(--ink-2)}
 .hero-facts span{display:inline-flex;align-items:center;gap:6px}
 .hero-art{position:relative;min-height:320px}
-.hero-art canvas{position:absolute;inset:0}
+.hero-art img{position:absolute;inset:0}
 
 .sec-head{display:flex;justify-content:space-between;align-items:flex-end;gap:12px 24px;flex-wrap:wrap}
 .sec-head p{max-width:60ch}
@@ -118,7 +120,7 @@ canvas.art{display:block;width:100%;height:100%}
 .review footer b{color:var(--ink)}
 .about{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);background:var(--sage);border-radius:var(--r-block);overflow:hidden}
 .about-art{position:relative;min-height:340px}
-.about-art canvas{position:absolute;inset:0}
+.about-art img{position:absolute;inset:0}
 .about-text{padding:48px;display:flex;flex-direction:column;gap:18px;justify-content:center}
 .about-text > p{max-width:52ch;color:var(--ink-2);font-size:var(--fs-l)}
 .promises{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:6px}
@@ -161,7 +163,7 @@ select.inp{padding-right:10px;cursor:pointer}
 .thumbs{display:flex;flex-direction:column;gap:10px}
 .thumb{padding:0;border:2px solid transparent;border-radius:14px;overflow:hidden;cursor:pointer;background:none;aspect-ratio:4/5;transition:border-color .15s}
 .thumb[aria-pressed="true"]{border-color:var(--ink)}
-.thumb canvas{display:block;width:100%;height:100%}
+.thumb{position:relative}
 .pinfo{display:flex;flex-direction:column;gap:22px}
 .pinfo .price{font-size:var(--fs-2xl)}
 .compo{background:var(--surface);border-radius:var(--r-card);padding:16px 18px;display:flex;flex-direction:column;gap:4px}
@@ -264,7 +266,7 @@ select.inp{padding-right:10px;cursor:pointer}
 @media (prefers-reduced-motion:reduce){ *{transition:none!important} }
 </style>
 
-<div class="demo-strip">Демо-макет для Flowy. Иллюстрации стоят на месте фото, тексты, отзывы и контакты — примеры.</div>
+<div class="demo-strip">Демо-макет для Flowy. Фото с Unsplash на месте ваших, тексты, отзывы и контакты — примеры.</div>
 <div class="topline"><div class="wrap"><span>Доставка по городу за 2 часа, бесплатно от 5 000 ₽</span><span>Ежедневно 9:00–21:00</span></div></div>
 <header class="site">
   <div class="wrap">
@@ -329,14 +331,14 @@ const P = [
   {id:"kompliment", name:"Мини-коробка «Комплимент»", cat:"compositions", price:2900, pop:7, isNew:true, added:"2026-09-20",
    compo:"5 роз и зелень в круглой коробке", desc:"Маленькая композиция, которую удобно поставить на рабочий стол.",
    art:{kind:"box", small:true, bg:"#F1D9D3", box:"#F6EEE7", n:6, flowers:[["rose","#D8465F"]], ribbon:"#8E2F45"}},
-  {id:"zz", name:"Замиокулькас", cat:"plants", price:2700, pop:9, isNew:false, added:"2026-06-12",
-   compo:"Высота 50–60 см, горшок 17 см", desc:"Неприхотливое растение: поливать раз в две недели, переносит тень.",
+  {id:"aloe", name:"Алоэ в бетонном кашпо", cat:"plants", price:2700, pop:9, isNew:false, added:"2026-06-12",
+   compo:"Высота 30–35 см, горшок 14 см", desc:"Неприхотливое растение: поливать раз в две-три недели, любит светлое место.",
    art:{kind:"plant", leaves:"small", bg:"#DEE4D2", pot:"#C9825F"}},
-  {id:"ficus", name:"Фикус лировидный", cat:"plants", price:4300, pop:10, isNew:false, added:"2026-06-28",
-   compo:"Высота 70–80 см, горшок 21 см", desc:"Крупные листья, любит светлое место без прямого солнца.",
+  {id:"monstera", name:"Монстера", cat:"plants", price:4300, pop:10, isNew:false, added:"2026-06-28",
+   compo:"Высота 50–60 см, горшок 19 см", desc:"Крупные резные листья, любит рассеянный свет и полив раз в неделю.",
    art:{kind:"plant", leaves:"big", bg:"#EFE0CA", pot:"#C9825F"}},
-  {id:"chai", name:"Набор «Чай и мёд»", cat:"gifts", price:1900, pop:11, isNew:false, added:"2026-08-25",
-   compo:"Травяной чай 100 г, мёд 250 г, открытка", desc:"Хорошее дополнение к букету или самостоятельный подарок.",
+  {id:"nabor", name:"Подарочный набор «Праздник»", cat:"gifts", price:1900, pop:11, isNew:false, added:"2026-08-25",
+   compo:"Травяной чай, мёд, свеча и открытка в коробке", desc:"Хорошее дополнение к букету или самостоятельный подарок.",
    art:{kind:"gift", bg:"#EFE0CA", box:"#C9A27C", band:"#6E8A5B"}},
   {id:"svecha", name:"Свеча «Инжир и ваниль»", cat:"gifts", price:1400, pop:12, isNew:true, added:"2026-09-15",
    compo:"Соевый воск, 180 мл, горит около 35 часов", desc:"Свеча ручной работы в стеклянном стакане.",
@@ -398,253 +400,9 @@ function updateHeader(){
   document.getElementById("cart-sum").textContent = cartCount() ? rub(cartSum()) : "Корзина";
 }
 
-/* ---------- illustrations (canvas) ---------- */
-function mulberry32(a){ return function(){ a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
-function hashStr(s){ let h = 2166136261; for (const ch of s) { h ^= ch.charCodeAt(0); h = Math.imul(h, 16777619); } return h >>> 0; }
-function hex2rgb(h){ const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
-function mix(a, b, t){ const x = hex2rgb(a), y = hex2rgb(b); return "rgb(" + x.map((v, i) => Math.round(v + (y[i] - v) * t)).join(",") + ")"; }
-const lighten = (c, t) => mix(c, "#FFFFFF", t);
-const darken = (c, t) => mix(c, "#1E1412", t);
-
-function ell(g, x, y, rx, ry, rot, fill, stroke, lw){
-  g.beginPath(); g.ellipse(x, y, Math.max(rx, .01), Math.max(ry, .01), rot || 0, 0, Math.PI * 2);
-  if (fill) { g.fillStyle = fill; g.fill(); }
-  if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw || .4; g.stroke(); }
-}
-function poly(g, pts, fill, stroke, lw){
-  g.beginPath(); pts.forEach((p, i) => i ? g.lineTo(p[0], p[1]) : g.moveTo(p[0], p[1])); g.closePath();
-  if (fill) { g.fillStyle = fill; g.fill(); }
-  if (stroke) { g.strokeStyle = stroke; g.lineWidth = lw || .4; g.stroke(); }
-}
-function leaf(g, x, y, len, wid, rot, col){
-  g.save(); g.translate(x, y); g.rotate(rot);
-  g.beginPath(); g.moveTo(0, 0); g.quadraticCurveTo(wid, -len * .5, 0, -len); g.quadraticCurveTo(-wid, -len * .5, 0, 0);
-  const gr = g.createLinearGradient(-wid, 0, wid, 0); gr.addColorStop(0, darken(col, .12)); gr.addColorStop(1, lighten(col, .12));
-  g.fillStyle = gr; g.fill();
-  g.beginPath(); g.moveTo(0, 0); g.lineTo(0, -len * .92); g.strokeStyle = darken(col, .25); g.lineWidth = .35; g.stroke();
-  g.restore();
-}
-function shadowBlob(g, x, y, rx, ry, a){
-  const gr = g.createRadialGradient(x, y, 0, x, y, rx);
-  gr.addColorStop(0, "rgba(58,42,40," + a + ")"); gr.addColorStop(1, "rgba(58,42,40,0)");
-  g.save(); g.translate(x, y); g.scale(1, ry / rx); g.translate(-x, -y);
-  g.fillStyle = gr; g.beginPath(); g.arc(x, y, rx, 0, Math.PI * 2); g.fill(); g.restore();
-}
-
-function rose(g, x, y, R, c, r){
-  const rot = r() * 6.28;
-  for (let k = 0; k < 5; k++) { const a = rot + k * 1.2566; ell(g, x + Math.cos(a) * R * .42, y + Math.sin(a) * R * .42, R * .6, R * .56, a, darken(c, .04), darken(c, .2), R * .04); }
-  const gr = g.createRadialGradient(x - R * .2, y - R * .25, R * .05, x, y, R * .7);
-  gr.addColorStop(0, lighten(c, .25)); gr.addColorStop(1, c);
-  ell(g, x, y, R * .62, R * .6, 0, gr);
-  g.beginPath();
-  for (let t = 0; t < 10.5; t += .15) { const rr = R * .52 * (1 - t / 11.5); const px = x + Math.cos(t + rot) * rr, py = y + Math.sin(t + rot) * rr * .95; t ? g.lineTo(px, py) : g.moveTo(px, py); }
-  g.strokeStyle = darken(c, .28); g.lineWidth = R * .07; g.lineCap = "round"; g.stroke();
-}
-function peony(g, x, y, R, c, r){
-  const rot = r() * 6.28;
-  for (let k = 0; k < 4; k++) {
-    const m = 9 - k * 2, rad = R * (1 - k * .21);
-    for (let j = 0; j < m; j++) { const a = rot + j / m * 6.283 + k * .5; ell(g, x + Math.cos(a) * rad * .45, y + Math.sin(a) * rad * .45, rad * .55, rad * .47, a, mix(c, "#FFFFFF", k * .1), darken(c, .14), .3); }
-  }
-  ell(g, x, y, R * .16, R * .15, 0, darken(c, .08));
-}
-function eustoma(g, x, y, R, c, r){
-  const rot = r() * 6.28;
-  for (let k = 0; k < 2; k++) { const m = 6 - k, rad = R * (1 - k * .3); for (let j = 0; j < m; j++) { const a = rot + j / m * 6.283 + k * .6; ell(g, x + Math.cos(a) * rad * .42, y + Math.sin(a) * rad * .42, rad * .55, rad * .5, a, mix(c, "#FFFFFF", k * .25), darken(c, .16), .3); } }
-  ell(g, x, y, R * .2, R * .2, 0, "#C9C1A5");
-}
-function daisy(g, x, y, R, c, r){
-  const rot = r() * 6.28, n = 14;
-  for (let j = 0; j < n; j++) { const a = rot + j / n * 6.283; ell(g, x + Math.cos(a) * R * .55, y + Math.sin(a) * R * .55, R * .45, R * .15, a, c, "#E3D8C3", .25); }
-  const gr = g.createRadialGradient(x - R * .08, y - R * .1, 0, x, y, R * .32); gr.addColorStop(0, "#F4CC5C"); gr.addColorStop(1, "#D99E2B");
-  ell(g, x, y, R * .3, R * .3, 0, gr);
-}
-function tulip(g, x, y, R, c){
-  ell(g, x, y - R * .15, R * .5, R * .78, 0, darken(c, .16));
-  ell(g, x - R * .24, y + R * .05, R * .42, R * .76, -.22, c, darken(c, .22), .3);
-  ell(g, x + R * .24, y + R * .05, R * .42, R * .76, .22, lighten(c, .12), darken(c, .22), .3);
-  g.beginPath(); g.moveTo(x, y + R * .6); g.lineTo(x, y - R * .3); g.strokeStyle = darken(c, .3); g.lineWidth = .35; g.stroke();
-}
-function carnation(g, x, y, R, c, r){
-  for (let layer = 0; layer < 2; layer++) {
-    const base = R * (layer ? .66 : 1), pts = [];
-    for (let i = 0; i < 30; i++) { const a = i / 30 * 6.283; const rr = base * (i % 2 ? .84 : 1) * (1 + (r() - .5) * .08); pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]); }
-    poly(g, pts, layer ? lighten(c, .14) : c, darken(c, .2), .3);
-  }
-}
-const FLOWER = {rose, peony, eustoma, daisy, tulip, carnation};
-
-function pack(r, n, cx, cy, rx, ry, rmin, rmax){
-  const out = [];
-  for (let tries = 0; tries < 900 && out.length < n; tries++) {
-    const x = cx + (r() * 2 - 1) * rx, y = cy + (r() * 2 - 1) * ry;
-    if (((x - cx) / rx) ** 2 + ((y - cy) / ry) ** 2 > 1) continue;
-    const R = rmin + r() * (rmax - rmin);
-    if (out.every(o => Math.hypot(o.x - x, o.y - y) > (o.R + R) * .74)) out.push({x, y, R});
-  }
-  return out.sort((a, b) => a.y - b.y);
-}
-function greens(g, r, cx, cy, rx, ry, n, cols, scale){
-  for (let i = 0; i < n; i++) {
-    const a = -Math.PI * 1.08 + (i / (n - 1)) * Math.PI * 1.16 + (r() - .5) * .2;
-    const x = cx + Math.cos(a) * rx * .9, y = cy + Math.sin(a) * ry * .9 + 4;
-    leaf(g, x, y, (9 + r() * 5) * scale, (3.4 + r() * 1.2) * scale, a + Math.PI / 2, cols[i % cols.length]);
-  }
-}
-function eucalyptus(g, r, cx, cy, rx, ry){
-  for (let i = 0; i < 7; i++) {
-    const a = -Math.PI * 1.02 + i / 6 * Math.PI * 1.04, len = 10 + r() * 6;
-    const x0 = cx + Math.cos(a) * rx * .7, y0 = cy + Math.sin(a) * ry * .7 + 3;
-    for (let k = 0; k < 5; k++) {
-      const t = (k + 1) / 5, px = x0 + Math.cos(a) * len * t, py = y0 + Math.sin(a) * len * t;
-      ell(g, px + Math.cos(a + 1.57) * 1.6, py + Math.sin(a + 1.57) * 1.6, 2, 1.8, 0, "#A3BBAE", "#7F9A8C", .3);
-      ell(g, px - Math.cos(a + 1.57) * 1.6, py - Math.sin(a + 1.57) * 1.6, 2, 1.8, 0, "#9AB4A6", "#7F9A8C", .3);
-    }
-  }
-}
-function heads(g, r, list, flowers){
-  list.forEach(h => { const f = flowers[Math.floor(r() * flowers.length)]; FLOWER[f[0]](g, h.x, h.y, h.R, f[1], r); });
-}
-function filler(g, r, cx, cy, rx, ry, n){
-  for (let i = 0; i < n; i++) { const a = r() * 6.283, d = Math.sqrt(r()); ell(g, cx + Math.cos(a) * rx * d, cy + Math.sin(a) * ry * d, .9, .9, 0, "#FFFFFF", "#DAD0C4", .2); }
-}
-function bow(g, x, y, col){
-  g.lineCap = "round";
-  g.beginPath(); g.moveTo(x, y); g.quadraticCurveTo(x - 3, y + 7, x - 6, y + 12); g.moveTo(x, y); g.quadraticCurveTo(x + 3, y + 7, x + 5, y + 13);
-  g.strokeStyle = col; g.lineWidth = 1.2; g.stroke();
-  ell(g, x - 4.2, y - 1, 4.6, 2.3, -.45, col, darken(col, .25), .3);
-  ell(g, x + 4.2, y - 1, 4.6, 2.3, .45, col, darken(col, .25), .3);
-  ell(g, x, y, 1.6, 1.5, 0, darken(col, .15));
-}
-
-const GREENS = ["#6F8B5E", "#86A072", "#5E7A4F"];
-const WRAP_COL = {kraft:["#B99069", "#CFAA82"], felt:["#AEB89F", "#C5CDB7"]};
-
-function drawBouquet(g, r, a, o){
-  const wrap = WRAP_COL[o.wrap] || WRAP_COL.kraft, cx = 50, cy = 45, rx = 26, ry = 19;
-  shadowBlob(g, 50, 114, 26, 5, .16);
-  g.strokeStyle = "#5E7A4A"; g.lineWidth = 1.5; g.lineCap = "round";
-  for (let i = 0; i < 6; i++) { g.beginPath(); g.moveTo(50 + (i - 2.5) * 1.1, 96); g.lineTo(50 + (i - 2.5) * 2.3, 113); g.stroke(); }
-  poly(g, [[17, 50], [83, 50], [54, 100], [46, 100]], darken(wrap[0], .08));
-  greens(g, r, cx, cy, rx, ry, 16, GREENS, 1);
-  if (a.euc) eucalyptus(g, r, cx, cy, rx, ry);
-  if (a.filler) filler(g, r, cx, cy, rx * .95, ry * .95, 60);
-  heads(g, r, pack(r, a.n, cx, cy, rx * .92, ry * .9, 5.8, 8.6), a.flowers);
-  if (a.filler) filler(g, r, cx, cy, rx * .9, ry * .8, 18);
-  poly(g, [[14, 55], [46, 104], [53, 104], [39, 63]], wrap[1], darken(wrap[1], .15), .3);
-  poly(g, [[86, 55], [54, 104], [47, 104], [61, 63]], darken(wrap[1], .06), darken(wrap[1], .2), .3);
-  g.beginPath(); g.moveTo(24, 60); g.lineTo(44, 98); g.moveTo(77, 60); g.lineTo(56, 98); g.strokeStyle = darken(wrap[1], .12); g.lineWidth = .4; g.stroke();
-  bow(g, 50, 86, a.ribbon);
-}
-function drawBox(g, r, a, box, opt){
-  const s = opt && opt.small ? .82 : 1;
-  g.save(); g.translate(50, 108); g.scale(s, s); g.translate(-50, -108);
-  shadowBlob(g, 50, 110, 30, 5, .16);
-  if (a.basket) { g.beginPath(); g.ellipse(50, 70, 22, 38, 0, Math.PI, 0); g.strokeStyle = darken(box, .2); g.lineWidth = 2.4; g.stroke(); }
-  ell(g, 50, 70, 25, 7, 0, darken(box, .35));
-  greens(g, r, 50, 62, 24, 11, 12, GREENS, .8);
-  if (a.filler) filler(g, r, 50, 62, 22, 10, 30);
-  heads(g, r, pack(r, a.n, 50, 63, 21, 10, 5.4, 7.6), a.flowers);
-  const gr = g.createLinearGradient(25, 0, 75, 0);
-  gr.addColorStop(0, darken(box, .14)); gr.addColorStop(.45, lighten(box, .1)); gr.addColorStop(1, darken(box, .2));
-  g.beginPath(); g.moveTo(25, 70); g.ellipse(50, 70, 25, 7, 0, Math.PI, 0, true); g.lineTo(75, 104); g.ellipse(50, 104, 25, 7, 0, 0, Math.PI); g.closePath();
-  g.fillStyle = gr; g.fill();
-  if (a.basket) { g.strokeStyle = darken(box, .22); g.lineWidth = .45; for (let yy = 76; yy < 108; yy += 3.2) { g.beginPath(); g.ellipse(50, yy, 25, 7, 0, 0, Math.PI); g.stroke(); } }
-  else {
-    g.beginPath(); g.ellipse(50, 84, 25, 7, 0, 0, Math.PI); g.lineTo(25, 88); g.ellipse(50, 88, 25, 7, 0, Math.PI, 0, true); g.closePath();
-    g.fillStyle = a.ribbon; g.fill();
-  }
-  g.beginPath(); g.ellipse(50, 70, 25, 7, 0, 0, Math.PI); g.strokeStyle = darken(box, .3); g.lineWidth = .5; g.stroke();
-  g.restore();
-}
-function drawPlant(g, r, a, potCol){
-  shadowBlob(g, 50, 111, 22, 4, .16);
-  ell(g, 50, 86, 16, 2.6, 0, "#5A4033");
-  if (a.leaves === "small") {
-    for (let i = 0; i < 8; i++) {
-      const ang = -Math.PI / 2 + (i - 3.5) * .2 + (r() - .5) * .1, len = 34 + r() * 16, bx = 50 + (i - 3.5) * 1.2;
-      const tx = bx + Math.cos(ang) * len, ty = 86 + Math.sin(ang) * len, mx = bx + Math.cos(ang) * len * .5 - (i - 3.5) * .8;
-      g.beginPath(); g.moveTo(bx, 86); g.quadraticCurveTo(mx, 86 + Math.sin(ang) * len * .5, tx, ty); g.strokeStyle = "#4A6B3C"; g.lineWidth = 1; g.stroke();
-      for (let t = .3; t <= 1; t += .1) {
-        const px = (1 - t) * (1 - t) * bx + 2 * (1 - t) * t * mx + t * t * tx, py = (1 - t) * (1 - t) * 86 + 2 * (1 - t) * t * (86 + Math.sin(ang) * len * .5) + t * t * ty;
-        leaf(g, px, py, 5.5, 1.9, ang + Math.PI / 2 - .9, "#3F6E3A");
-        leaf(g, px, py, 5.5, 1.9, ang + Math.PI / 2 + .9, "#477A40");
-      }
-    }
-  } else {
-    const stems = [[44, 30], [55, 22], [62, 40], [38, 44]];
-    stems.forEach(st => { g.beginPath(); g.moveTo(50, 86); g.quadraticCurveTo((50 + st[0]) / 2, 70, st[0], st[1]); g.strokeStyle = "#6B5A3F"; g.lineWidth = 1.1; g.stroke(); });
-    const L = [[44, 30, -.3], [55, 22, .2], [62, 40, .8], [38, 44, -.9], [48, 50, -.2], [57, 58, .7], [42, 64, -.8], [53, 36, .3]];
-    L.forEach(l => {
-      g.save(); g.translate(l[0], l[1]); g.rotate(l[2]);
-      g.beginPath(); g.moveTo(0, 8); g.bezierCurveTo(9, 4, 10, -12, 0, -13); g.bezierCurveTo(-10, -12, -9, 4, 0, 8);
-      const gr = g.createLinearGradient(-9, 0, 9, 0); gr.addColorStop(0, "#3F6A34"); gr.addColorStop(1, "#5E8C4C");
-      g.fillStyle = gr; g.fill();
-      g.strokeStyle = "#8FB07A"; g.lineWidth = .35; g.beginPath(); g.moveTo(0, 7); g.lineTo(0, -12);
-      for (let k = -8; k < 6; k += 3.5) { g.moveTo(0, k); g.lineTo(5, k - 3); g.moveTo(0, k); g.lineTo(-5, k - 3); }
-      g.stroke(); g.restore();
-    });
-  }
-  const gr = g.createLinearGradient(34, 0, 66, 0);
-  gr.addColorStop(0, darken(potCol, .12)); gr.addColorStop(.45, lighten(potCol, .12)); gr.addColorStop(1, darken(potCol, .18));
-  poly(g, [[35, 91], [65, 91], [61, 110], [39, 110]], gr);
-  g.beginPath(); g.roundRect ? g.roundRect(32.5, 85, 35, 6.5, 1.2) : g.rect(32.5, 85, 35, 6.5); g.fillStyle = gr; g.fill();
-}
-function drawGift(g, r, a){
-  shadowBlob(g, 50, 108, 28, 5, .16);
-  [["daisy", "#FFFDF6", 30, 48], ["rose", "#E7A9A4", 36, 42]].forEach(f => {
-    g.beginPath(); g.moveTo(f[2] + 4, 70); g.lineTo(f[2], f[3]); g.strokeStyle = "#5E7A4A"; g.lineWidth = .9; g.stroke();
-    leaf(g, f[2] + 2, f[3] + 12, 8, 2.6, -.7, "#7A956A");
-    FLOWER[f[0]](g, f[2], f[3], 6, f[1], r);
-  });
-  const gr = g.createLinearGradient(28, 0, 72, 0); gr.addColorStop(0, darken(a.box, .1)); gr.addColorStop(1, lighten(a.box, .1));
-  poly(g, [[28, 68], [72, 68], [72, 106], [28, 106]], gr);
-  poly(g, [[26, 60], [74, 60], [74, 70], [26, 70]], lighten(a.box, .06), darken(a.box, .18), .3);
-  poly(g, [[47, 60], [53, 60], [53, 106], [47, 106]], a.band);
-  poly(g, [[28, 84], [72, 84], [72, 89], [28, 89]], a.band);
-  bow(g, 50, 60, a.band);
-  poly(g, [[60, 92], [68, 92], [68, 99], [60, 99]], "#FFF8F2", darken(a.box, .2), .3);
-}
-function drawCandle(g, r, a){
-  shadowBlob(g, 50, 108, 22, 4.5, .18);
-  const glass = g.createLinearGradient(36, 0, 64, 0);
-  glass.addColorStop(0, "rgba(255,255,255,.35)"); glass.addColorStop(.3, "rgba(255,255,255,.7)"); glass.addColorStop(1, "rgba(255,255,255,.25)");
-  poly(g, [[36, 62], [64, 62], [64, 106], [36, 106]], a.box);
-  poly(g, [[36, 62], [64, 62], [64, 70], [36, 70]], "#F3E3C8");
-  poly(g, [[36, 62], [64, 62], [64, 106], [36, 106]], glass);
-  poly(g, [[39, 78], [61, 78], [61, 96], [39, 96]], "#FFF8F2");
-  g.fillStyle = a.box; g.font = "600 4px sans-serif"; g.textAlign = "center"; g.fillText("ИНЖИР", 50, 86.5); g.font = "3px sans-serif"; g.fillText("и ваниль", 50, 91.5);
-  g.beginPath(); g.moveTo(50, 64); g.lineTo(50, 58); g.strokeStyle = "#3A2A28"; g.lineWidth = .6; g.stroke();
-  ell(g, 50, 54.5, 1.7, 3.6, 0, "#F2B64B"); ell(g, 50, 55.5, .8, 1.8, 0, "#FFF1C4");
-  [["eustoma", "#EEE6F0", 70, 96], ["rose", "#E7A9A4", 30, 98]].forEach(f => { leaf(g, f[2], f[3] + 3, 9, 3, f[2] > 50 ? .9 : -.9, "#86A072"); FLOWER[f[0]](g, f[2], f[3], 5.5, f[1], r); });
-}
-
-function paint(cv){
-  const w = cv.clientWidth, h = cv.clientHeight;
-  if (!w || !h) return;
-  const dpr = Math.min(window.devicePixelRatio || 1, 2);
-  cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
-  const g = cv.getContext("2d"); g.setTransform(dpr, 0, 0, dpr, 0, 0);
-  const p = BY[cv.dataset.art], a = p.art, o = cv.dataset.opts ? JSON.parse(cv.dataset.opts) : defaults();
-  g.fillStyle = cv.dataset.bg || a.bg; g.fillRect(0, 0, w, h);
-  const s = Math.min(w / 100, h / 118) * (Number(cv.dataset.zoom) || 1);
-  g.translate(w / 2, h / 2); g.scale(s, s);
-  const view = cv.dataset.view || "front";
-  if (view === "close") { g.scale(1.75, 1.75); g.translate(0, 12); }
-  if (view === "side") g.scale(-1, 1);
-  g.translate(-50, -62);
-  const r = mulberry32(hashStr(p.id + (view === "close" ? "" : "")));
-  if (a.kind === "bouquet" && o.wrap === "hatbox") drawBox(g, r, Object.assign({}, a, {n:Math.max(8, a.n - 3)}), "#E8C4BC");
-  else if (a.kind === "bouquet") drawBouquet(g, r, a, o);
-  else if (a.kind === "box") drawBox(g, r, a, a.box, {small:a.small});
-  else if (a.kind === "plant") drawPlant(g, r, a, o.pot === "ceramic" ? "#EDE6DC" : a.pot);
-  else if (a.kind === "gift") drawGift(g, r, a);
-  else drawCandle(g, r, a);
-}
-const ro = new ResizeObserver(entries => entries.forEach(e => paint(e.target)));
-function paintAll(){ document.querySelectorAll("canvas.art").forEach(cv => { paint(cv); ro.observe(cv); }); }
-const art = (id, extra) => '<canvas class="art" data-art="' + id + '"' + (extra || "") + ' role="img" aria-label="' + esc(BY[id].name) + '"></canvas>';
+/* ---------- photos ---------- */
+const photo = (file, alt, cls) => '<img class="art' + (cls ? " " + cls : "") + '" src="photos/' + file + '.jpg" alt="' + esc(alt) + '" loading="lazy" decoding="async">';
+const art = (id, view) => photo(BY[id].img || id, BY[id].name, view && view !== "front" ? "view-" + view : "");
 
 /* ---------- views ---------- */
 const state = {view:"home", cat:"all", min:"", max:"", sort:"pop", pid:null, opts:defaults(), shot:"front", order:null, delivery:"courier", pay:"online", errors:{}};
@@ -663,17 +421,17 @@ function card(p){
 
 function vHome(){
   const popular = P.slice().sort((a, b) => a.pop - b.pop).slice(0, 4);
-  const catArt = {bouquets:"utro", compositions:"pudra", plants:"ficus", gifts:"chai"};
+  const catArt = {bouquets:"cat-bouquets", compositions:"pudra", plants:"monstera", gifts:"cat-gifts"};
   return '<div class="page">' +
-    '<section class="hero"><div class="hero-text"><h1>Свежие букеты с доставкой за 2 часа</h1><p>Собираем в день заказа и присылаем фото букета перед отправкой.</p><div><button class="btn btn-primary" type="button" data-go="catalog">Выбрать букет</button></div><div class="hero-facts"><span>' + ICON_CHECK + 'Бесплатно от 5 000 ₽</span><span>' + ICON_CHECK + 'Открытка к любому букету</span></div></div><div class="hero-art">' + art("utro", ' data-bg="#F1D9D3" data-zoom="1.05"') + '</div></section>' +
+    '<section class="hero"><div class="hero-text"><h1>Свежие букеты с доставкой за 2 часа</h1><p>Собираем в день заказа и присылаем фото букета перед отправкой.</p><div><button class="btn btn-primary" type="button" data-go="catalog">Выбрать букет</button></div><div class="hero-facts"><span>' + ICON_CHECK + 'Бесплатно от 5 000 ₽</span><span>' + ICON_CHECK + 'Открытка к любому букету</span></div></div><div class="hero-art">' + photo("hero", "Букет белых тюльпанов в бумажной упаковке") + '</div></section>' +
     '<section class="stack"><div class="sec-head"><h2>Что ищете?</h2></div><div class="cats">' +
-      Object.keys(CATS).map(c => '<button class="cat" type="button" data-cat="' + c + '"><div class="art-box">' + art(catArt[c]) + '</div><span class="cat-name">' + CATS[c] + '<small>' + P.filter(p => p.cat === c).length + '</small></span></button>').join("") +
+      Object.keys(CATS).map(c => '<button class="cat" type="button" data-cat="' + c + '"><div class="art-box">' + photo(catArt[c], CATS[c]) + '</div><span class="cat-name">' + CATS[c] + '<small>' + P.filter(p => p.cat === c).length + '</small></span></button>').join("") +
     '</div></section>' +
     '<section class="stack"><div class="sec-head"><h2>Чаще всего заказывают</h2><button class="btn" type="button" data-go="catalog">Весь каталог</button></div><div class="grid">' + popular.map(card).join("") + '</div></section>' +
     '<section class="stack"><div class="sec-head"><h2>Отзывы</h2><p class="tiny">Пример блока. На сайте будут отзывы ваших покупателей.</p></div><div class="reviews">' +
       REVIEWS.map(r => '<figure class="review" style="margin:0"><blockquote>' + esc(r.text) + '</blockquote><footer><b>' + esc(r.name) + '</b>' + esc(r.what) + '</footer></figure>').join("") +
     '</div></section>' +
-    '<section class="about" id="about"><div class="about-art">' + art("ficus", ' data-bg="#DEE4D2"') + '</div><div class="about-text"><h2>Flowy — цветочная мастерская на Садовой</h2><p>Мы небольшая команда флористов. Цветы берём у проверенных поставщиков два раза в неделю, букет собираем в день доставки.</p>' +
+    '<section class="about" id="about"><div class="about-art">' + photo("about", "Букет на столе в мастерской") + '</div><div class="about-text"><h2>Flowy — цветочная мастерская на Садовой</h2><p>Мы небольшая команда флористов. Цветы берём у проверенных поставщиков два раза в неделю, букет собираем в день доставки.</p>' +
       '<div class="promises"><div><b>Фото перед отправкой</b>Пришлём в мессенджер, можно попросить поправить.</div><div><b>Точно в интервал</b>Курьер позвонит за 30 минут.</div><div><b>Замена букета</b>Если цветы завяли раньше 3 дней, соберём новый.</div></div></div></section>' +
   '</div>';
 }
@@ -701,7 +459,6 @@ function vCatalog(){
 
 function vProduct(){
   const p = BY[state.pid], o = state.opts;
-  const opts = ' data-opts="' + esc(JSON.stringify(o)) + '"';
   const similar = P.filter(x => x.cat === p.cat && x.id !== p.id).concat(P.filter(x => x.cat !== p.cat)).slice(0, 4);
   const shots = [["front", "Спереди"], ["close", "Крупно"], ["side", "С другой стороны"]];
   let optionsHtml = "";
@@ -710,8 +467,8 @@ function vProduct(){
   if (p.cat === "plants") optionsHtml += '<div class="opt-group"><span>Кашпо</span><div class="seg">' + POTS.map(x => '<button type="button" data-opt="pot" data-val="' + x[0] + '" aria-pressed="' + (o.pot === x[0]) + '">' + x[1] + '<small>' + (x[2] ? "+" + rub(x[2]) : "пластиковый горшок") + '</small></button>').join("") + '</div></div>';
   if (hasCard(p)) optionsHtml += '<div class="opt-group"><label class="check" for="opt-card"><input type="checkbox" id="opt-card"' + (o.card ? " checked" : "") + '>Добавить открытку, +' + rub(CARD_PRICE) + '</label>' + (o.card ? '<textarea class="inp" id="card-text" maxlength="160" placeholder="Текст открытки, до 160 символов">' + esc(o.cardText) + '</textarea>' : "") + '</div>';
   return '<div class="page"><div class="stack" style="gap:20px"><div class="crumbs"><button type="button" data-go="home">Главная</button><span>/</span><button type="button" data-cat="' + p.cat + '">' + CATS[p.cat] + '</button><span>/</span><span>' + esc(p.name) + '</span></div>' +
-    '<div class="product"><div class="gallery"><div class="thumbs">' + shots.map(s => '<button class="thumb" type="button" data-shot="' + s[0] + '" aria-pressed="' + (state.shot === s[0]) + '" aria-label="' + s[1] + '">' + art(p.id, opts + ' data-view="' + s[0] + '"') + '</button>').join("") + '</div>' +
-      '<div class="art-box" style="border-radius:var(--r-block)">' + art(p.id, opts + ' data-view="' + state.shot + '"') + '</div></div>' +
+    '<div class="product"><div class="gallery"><div class="thumbs">' + shots.map(s => '<button class="thumb" type="button" data-shot="' + s[0] + '" aria-pressed="' + (state.shot === s[0]) + '" aria-label="' + s[1] + '">' + art(p.id, s[0]) + '</button>').join("") + '</div>' +
+      '<div class="art-box" style="border-radius:var(--r-block)">' + art(p.id, state.shot) + '</div></div>' +
     '<div class="pinfo"><div class="stack" style="gap:8px"><h1>' + esc(p.name) + '</h1><span class="price" id="p-price">' + rub(unitPrice(p, o)) + '</span></div>' +
       '<div class="compo"><b>Состав</b><span class="muted">' + esc(p.compo) + '</span></div><p class="muted">' + esc(p.desc) + '</p>' + optionsHtml +
       '<div class="buy-row"><button class="btn btn-primary" type="button" data-buy="add">В корзину</button><button class="btn" type="button" data-buy="now">Купить сейчас</button></div>' +
@@ -737,7 +494,7 @@ function vCart(){
   const sum = cartSum(), dc = deliveryCost(sum), e = state.errors;
   const field = (id, label, type, wide, ph) => '<div class="field' + (wide ? " field-wide" : "") + '"><label for="f-' + id + '">' + label + '</label><input class="inp" id="f-' + id + '" type="' + type + '" value="' + esc(f[id]) + '"' + (ph ? ' placeholder="' + ph + '"' : "") + (e[id] ? ' aria-invalid="true" aria-describedby="e-' + id + '"' : "") + '>' + (e[id] ? '<span class="err" id="e-' + id + '">' + e[id] + '</span>' : "") + '</div>';
   return '<form class="stack" style="gap:20px" id="checkout" novalidate><h1>Корзина и оформление</h1><div class="checkout"><div class="stack" style="gap:16px">' +
-    '<section class="box"><h2>Товары</h2><div>' + cart.map(l => { const p = BY[l.id]; return '<div class="line"><button class="card-img" type="button" data-product="' + p.id + '" aria-label="' + esc(p.name) + '"><div class="art-box">' + art(p.id, ' data-opts="' + esc(JSON.stringify(l.opts)) + '"') + '</div></button><div><div class="line-name">' + esc(p.name) + '</div><div class="tiny">' + esc(optText(p, l.opts) || "") + (l.opts.card && l.opts.cardText ? " · «" + esc(l.opts.cardText.slice(0, 40)) + (l.opts.cardText.length > 40 ? "…" : "") + "»" : "") + '</div><button class="btn btn-ghost" type="button" data-remove="' + esc(l.key) + '" style="margin-left:-10px">Удалить</button></div><div class="line-right"><span class="stepper"><button type="button" data-q="' + esc(l.key) + '" data-d="-1" aria-label="Меньше">−</button><output>' + l.qty + '</output><button type="button" data-q="' + esc(l.key) + '" data-d="1" aria-label="Больше">+</button></span><span class="price">' + rub(unitPrice(p, l.opts) * l.qty) + '</span></div></div>'; }).join("") + '</div></section>' +
+    '<section class="box"><h2>Товары</h2><div>' + cart.map(l => { const p = BY[l.id]; return '<div class="line"><button class="card-img" type="button" data-product="' + p.id + '" aria-label="' + esc(p.name) + '"><div class="art-box">' + art(p.id) + '</div></button><div><div class="line-name">' + esc(p.name) + '</div><div class="tiny">' + esc(optText(p, l.opts) || "") + (l.opts.card && l.opts.cardText ? " · «" + esc(l.opts.cardText.slice(0, 40)) + (l.opts.cardText.length > 40 ? "…" : "") + "»" : "") + '</div><button class="btn btn-ghost" type="button" data-remove="' + esc(l.key) + '" style="margin-left:-10px">Удалить</button></div><div class="line-right"><span class="stepper"><button type="button" data-q="' + esc(l.key) + '" data-d="-1" aria-label="Меньше">−</button><output>' + l.qty + '</output><button type="button" data-q="' + esc(l.key) + '" data-d="1" aria-label="Больше">+</button></span><span class="price">' + rub(unitPrice(p, l.opts) * l.qty) + '</span></div></div>'; }).join("") + '</div></section>' +
     '<section class="box"><h2><span class="step">1</span>Доставка</h2><div class="radios">' +
       '<label class="radio"><input type="radio" name="delivery" value="courier"' + (state.delivery === "courier" ? " checked" : "") + '><div><b>Курьер</b><span>' + (sum >= 5000 ? "бесплатно" : "390 ₽, бесплатно от 5 000 ₽") + '</span></div></label>' +
       '<label class="radio"><input type="radio" name="delivery" value="pickup"' + (state.delivery === "pickup" ? " checked" : "") + '><div><b>Самовывоз</b><span>ул. Садовая, 12, бесплатно</span></div></label></div>' +
@@ -771,7 +528,6 @@ function render(scroll){
   document.querySelectorAll(".menu button").forEach(b => b.removeAttribute("aria-current"));
   if (state.view === "catalog" || state.view === "product") document.getElementById("m-catalog").setAttribute("aria-current", "page");
   updateHeader();
-  paintAll();
   if (scroll) window.scrollTo(0, 0);
 }
 function go(v, extra){ Object.assign(state, extra || {}); state.view = v; state.errors = {}; render(true); }
