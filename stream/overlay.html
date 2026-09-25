@@ -1,0 +1,364 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Благодать, оверлей стрима</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Forum&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&display=swap">
+<style>
+/*
+  Оверлей для OBS: источник «Браузер», 1920×1080, локальный файл.
+  Сцены выбираются хэшем в конце адреса:
+    overlay.html#starting  — «Скоро начнём»
+    overlay.html#game      — игровая сцена (поверх захвата игры и аватара)
+    overlay.html#brb       — «Отдыхаю у благодати»
+    overlay.html#ending    — конец стрима
+  В OBS превью-заглушки (игра, силуэт аватара, переключатель) скрываются сами.
+*/
+:root{
+  color-scheme:dark;
+  --night:#0B0A09; --ash:#16130F; --smoke:#211C16;
+  --gold:#D4B06A; --gold-hi:#F3DDA2; --gold-dim:#8A7143; --ember:#E9A04C;
+  --parch:#E8DCC0; --parch-2:#B9AC8F;
+  --blood:#8F1D1D;
+  --display:"Forum","Cormorant Garamond",Georgia,serif;
+  --body:"Cormorant Garamond",Georgia,serif;
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;background:var(--night);overflow:hidden}
+body.obs{background:transparent}
+#stage{position:absolute;left:0;top:0;width:1920px;height:1080px;transform-origin:0 0;color:var(--parch);font-family:var(--body)}
+.scene{position:absolute;inset:0;display:none}
+.scene.on{display:block}
+canvas#grace{position:absolute;inset:0;width:1920px;height:1080px;pointer-events:none;z-index:5}
+
+/* ---------- общие элементы ---------- */
+.frame{position:absolute;border:1px solid rgba(212,176,106,.55);outline:1px solid rgba(212,176,106,.18);outline-offset:6px}
+.corner{position:absolute;width:44px;height:44px}
+.corner svg{width:100%;height:100%;display:block}
+.corner.tl{left:-15px;top:-15px}
+.corner.tr{right:-15px;top:-15px;transform:scaleX(-1)}
+.corner.bl{left:-15px;bottom:-15px;transform:scaleY(-1)}
+.corner.br{right:-15px;bottom:-15px;transform:scale(-1,-1)}
+.label{font-family:var(--display);letter-spacing:.14em;color:var(--gold);font-size:22px}
+.gold-text{background:linear-gradient(180deg,var(--gold-hi) 0%,var(--gold) 55%,var(--gold-dim) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
+.rule{height:1px;background:linear-gradient(90deg,transparent,var(--gold) 20%,var(--gold) 80%,transparent)}
+.sigil{position:absolute;pointer-events:none}
+
+/* ---------- полноэкранные сцены ---------- */
+.full-bg{position:absolute;inset:0;background:
+  radial-gradient(900px 700px at 1390px 560px, rgba(233,160,76,.22), transparent 70%),
+  radial-gradient(1400px 900px at 1390px 1180px, rgba(212,176,106,.14), transparent 70%),
+  linear-gradient(180deg,#0E0C0A 0%,#15110C 60%,#0B0A09 100%)}
+.tree{position:absolute;right:230px;top:40px;width:760px;height:940px;opacity:.9}
+.full-text{position:absolute;left:150px;top:0;bottom:0;width:860px;display:flex;flex-direction:column;justify-content:center;gap:26px}
+.full-text h1{margin:0;font-family:var(--display);font-weight:400;font-size:132px;line-height:.95;letter-spacing:.02em}
+.full-text .sub{font-size:40px;line-height:1.3;color:var(--parch);max-width:760px;font-style:italic}
+.count{font-family:var(--display);font-size:96px;color:var(--parch);letter-spacing:.06em;font-variant-numeric:tabular-nums}
+.meta{display:flex;flex-direction:column;gap:10px;font-size:30px;color:var(--parch-2)}
+.meta b{color:var(--parch);font-weight:600}
+.socials{display:flex;gap:34px;font-size:28px;color:var(--parch-2)}
+.socials span{display:inline-flex;gap:10px;align-items:center}
+.socials i{font-style:normal;color:var(--gold);font-family:var(--display);letter-spacing:.1em;font-size:20px}
+.avatar-slot{position:absolute;right:120px;bottom:0;width:760px;height:960px}
+
+/* ---------- игровая сцена ---------- */
+.game-frame{left:36px;top:36px;width:1440px;height:810px}
+.side{position:absolute;left:1512px;top:36px;width:372px;display:flex;flex-direction:column;gap:22px}
+.panel{position:relative;background:linear-gradient(180deg,rgba(22,19,15,.88),rgba(11,10,9,.92));border:1px solid rgba(212,176,106,.4);padding:18px 20px}
+.panel .label{font-size:17px;display:block;margin-bottom:10px}
+.stat{display:flex;align-items:baseline;justify-content:space-between;gap:12px;font-size:26px}
+.stat + .stat{margin-top:6px}
+.stat b{font-family:var(--display);font-size:44px;font-weight:400;color:var(--parch);font-variant-numeric:tabular-nums;line-height:1}
+.stat.died b{color:#E86A5C}
+.goal{font-size:25px;line-height:1.3;color:var(--parch)}
+.goal small{display:block;color:var(--parch-2);font-size:21px;margin-top:4px}
+.chat{flex:1;min-width:0;align-self:stretch;margin:18px 0;display:flex;flex-direction:column;padding:12px 18px}
+.chat .label{margin-bottom:6px}
+.chat-list{flex:1;min-height:0;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end;gap:0;font-size:20px;line-height:1.35}
+.msg{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.msg b{font-weight:600;margin-right:6px}
+.msg span{color:var(--parch)}
+.bar{position:absolute;left:36px;top:882px;width:1440px;height:162px;display:flex;align-items:center;gap:40px;padding:0 40px}
+.bar .name{font-family:var(--display);font-size:64px;line-height:1;letter-spacing:.04em}
+.bar .now{display:flex;flex-direction:column;gap:6px;font-size:26px;color:var(--parch-2);border-left:1px solid rgba(212,176,106,.4);padding-left:36px}
+.bar .now b{color:var(--parch);font-weight:600;font-size:30px}
+.bar{padding-right:18px!important}
+.avatar-ring{position:absolute;left:1476px;right:0;top:440px;bottom:0;pointer-events:none;
+  background:radial-gradient(240px 300px at 50% 62%, rgba(233,160,76,.26), transparent 72%)}
+.avatar-ring::after{content:"";position:absolute;left:60px;right:60px;bottom:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent)}
+
+/* ---------- смерть ---------- */
+.died-flash{position:absolute;left:36px;top:36px;width:1440px;height:810px;display:grid;place-items:center;pointer-events:none;opacity:0;z-index:6;
+  background:linear-gradient(180deg,transparent 38%,rgba(0,0,0,.75) 44%,rgba(0,0,0,.75) 56%,transparent 62%)}
+.died-flash span{font-family:var(--display);font-size:120px;letter-spacing:.08em;color:#A7201F;text-shadow:0 0 30px rgba(167,32,31,.5)}
+.died-flash.show{animation:died 3.2s ease forwards}
+@keyframes died{0%{opacity:0}12%{opacity:1}75%{opacity:1}100%{opacity:0}}
+
+/* ---------- превью (в OBS скрыто) ---------- */
+.preview-game{position:absolute;left:36px;top:36px;width:1440px;height:810px;background:
+  linear-gradient(160deg,#2a3340 0%,#3b4148 40%,#1b1d1f 100%);display:grid;place-items:center;color:#7d8791;font:500 28px var(--body);letter-spacing:.1em}
+.preview-avatar{position:absolute;pointer-events:none;opacity:.55}
+body.obs .preview-game, body.obs .preview-avatar, body.obs #switcher{display:none}
+#switcher{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:20;display:flex;gap:6px;padding:6px;border-radius:12px;background:rgba(11,10,9,.9);border:1px solid rgba(212,176,106,.4)}
+#switcher button{font:600 16px var(--body);color:var(--parch);background:transparent;border:1px solid transparent;border-radius:8px;padding:8px 14px;cursor:pointer}
+#switcher button[aria-pressed="true"]{border-color:var(--gold);color:var(--gold-hi)}
+#switcher button:focus-visible{outline:2px solid var(--gold)}
+@media (prefers-reduced-motion:reduce){.died-flash.show{animation-duration:.01s}}
+</style>
+</head>
+<body>
+<div id="stage">
+  <canvas id="grace" width="1920" height="1080"></canvas>
+
+  <!-- ===== Скоро начнём ===== -->
+  <section class="scene" id="scene-starting">
+    <div class="full-bg"></div>
+    <svg class="tree" viewBox="0 0 760 940" aria-hidden="true"><use href="#erdtree"/></svg>
+    <div class="full-text">
+      <span class="label">ЭФИР СКОРО НАЧНЁТСЯ</span>
+      <h1 class="gold-text">Скоро<br>начнём</h1>
+      <div class="rule" style="width:520px"></div>
+      <p class="sub" data-bind="topic"></p>
+      <div class="count" id="countdown">10:00</div>
+      <div class="socials" data-bind="socials"></div>
+    </div>
+    <div class="avatar-slot"></div>
+  </section>
+
+  <!-- ===== Игра ===== -->
+  <section class="scene" id="scene-game">
+    <div class="preview-game">ЗАХВАТ ИГРЫ</div>
+    <div class="frame game-frame"><span class="corner tl"><svg viewBox="0 0 44 44"><use href="#corner"/></svg></span><span class="corner tr"><svg viewBox="0 0 44 44"><use href="#corner"/></svg></span><span class="corner bl"><svg viewBox="0 0 44 44"><use href="#corner"/></svg></span><span class="corner br"><svg viewBox="0 0 44 44"><use href="#corner"/></svg></span></div>
+    <div class="died-flash" id="died-flash"><span>ВЫ ПОГИБЛИ</span></div>
+
+    <div class="bar">
+      <span class="name gold-text" data-bind="name"></span>
+      <div class="now"><span>Сейчас</span><b data-bind="now"></b></div>
+      <div class="panel chat">
+        <span class="label">ГОЛОСА ИЗ МЕЖЗЕМЬЯ</span>
+        <div class="chat-list" id="chat"></div>
+      </div>
+    </div>
+
+    <aside class="side">
+      <div class="panel">
+        <span class="label">ХРОНИКА ПОГАСШЕГО</span>
+        <div class="stat died"><span>Смертей</span><b id="deaths">0</b></div>
+        <div class="stat"><span>Боссов повержено</span><b id="bosses">0</b></div>
+      </div>
+      <div class="panel">
+        <span class="label">ЦЕЛЬ СТРИМА</span>
+        <div class="goal"><span data-bind="goal"></span><small data-bind="goalNote"></small></div>
+      </div>
+    </aside>
+    <div class="avatar-ring"></div>
+    <svg class="preview-avatar" style="left:1500px;bottom:0;width:400px;height:560px" viewBox="0 0 430 560"><use href="#silhouette"/></svg>
+  </section>
+
+  <!-- ===== Перерыв ===== -->
+  <section class="scene" id="scene-brb">
+    <div class="full-bg"></div>
+    <svg class="sigil" style="left:1080px;top:190px;width:700px;height:700px" viewBox="0 0 700 700" aria-hidden="true"><use href="#grace-sigil"/></svg>
+    <div class="full-text">
+      <span class="label">ПЕРЕРЫВ</span>
+      <h1 class="gold-text">Отдыхаю<br>у благодати</h1>
+      <div class="rule" style="width:520px"></div>
+      <p class="sub">Вернусь через пару минут. Не уходите далеко, Погасшие.</p>
+    </div>
+  </section>
+
+  <!-- ===== Конец ===== -->
+  <section class="scene" id="scene-ending">
+    <div class="full-bg"></div>
+    <svg class="tree" viewBox="0 0 760 940" aria-hidden="true"><use href="#erdtree"/></svg>
+    <div class="full-text">
+      <span class="label">КОНЕЦ ЭФИРА</span>
+      <h1 class="gold-text">Спасибо,<br>что были рядом</h1>
+      <div class="rule" style="width:520px"></div>
+      <div class="meta" id="summary"></div>
+      <div class="socials" data-bind="socials"></div>
+    </div>
+    <div class="avatar-slot"></div>
+  </section>
+</div>
+
+<div id="switcher" role="group" aria-label="Сцена">
+  <button type="button" data-scene="starting">Скоро начнём</button>
+  <button type="button" data-scene="game">Игра</button>
+  <button type="button" data-scene="brb">Перерыв</button>
+  <button type="button" data-scene="ending">Конец</button>
+  <button type="button" id="demo-death">+ смерть</button>
+</div>
+
+<!-- Графика: своя, геометрией, без ассетов игры -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="g-gold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F3DDA2"/><stop offset=".6" stop-color="#D4B06A"/><stop offset="1" stop-color="#8A7143"/></linearGradient>
+    <radialGradient id="g-glow"><stop offset="0" stop-color="#F3DDA2" stop-opacity=".9"/><stop offset=".4" stop-color="#E9A04C" stop-opacity=".35"/><stop offset="1" stop-color="#E9A04C" stop-opacity="0"/></radialGradient>
+    <symbol id="corner" viewBox="0 0 44 44"><path d="M2 42V14L14 2h28" fill="none" stroke="url(#g-gold)" stroke-width="2"/><path d="M8 42V17L17 8h25" fill="none" stroke="#D4B06A" stroke-opacity=".5" stroke-width="1"/><circle cx="14" cy="14" r="3" fill="#F3DDA2"/></symbol>
+    <symbol id="grace-sigil" viewBox="0 0 700 700">
+      <circle cx="350" cy="350" r="330" fill="url(#g-glow)" opacity=".5"/>
+      <g fill="none" stroke="#D4B06A" stroke-opacity=".75">
+        <circle cx="350" cy="350" r="250" stroke-width="1.5"/>
+        <circle cx="350" cy="350" r="232" stroke-width="1" stroke-dasharray="2 10"/>
+        <circle cx="350" cy="350" r="160" stroke-width="1"/>
+        <path d="M350 100v500M100 350h500" stroke-width="1" stroke-opacity=".35"/>
+        <path d="M350 170 L380 350 L350 530 L320 350 Z" stroke-width="1.5"/>
+      </g>
+      <circle cx="350" cy="350" r="70" fill="url(#g-glow)"/>
+      <circle cx="350" cy="350" r="9" fill="#F3DDA2"/>
+    </symbol>
+    <symbol id="erdtree" viewBox="0 0 760 940">
+      <ellipse cx="380" cy="360" rx="360" ry="330" fill="url(#g-glow)" opacity=".55"/>
+      <g fill="none" stroke="url(#g-gold)" stroke-linecap="round">
+        <path d="M380 940 C372 780 386 650 380 520" stroke-width="16"/>
+        <path d="M380 560 C340 470 250 420 150 400" stroke-width="7"/>
+        <path d="M380 540 C430 450 520 410 620 395" stroke-width="7"/>
+        <path d="M380 520 C370 420 390 320 380 180" stroke-width="9"/>
+        <path d="M378 420 C320 350 250 300 190 230" stroke-width="4"/>
+        <path d="M382 400 C440 340 510 290 570 220" stroke-width="4"/>
+        <path d="M380 300 C340 250 320 190 300 120" stroke-width="3"/>
+        <path d="M382 280 C420 230 450 170 470 110" stroke-width="3"/>
+        <path d="M150 400 C120 380 90 350 70 310M620 395 C650 370 680 340 700 300M190 230 C170 200 160 170 160 140M570 220 C590 190 600 160 600 130" stroke-width="2"/>
+        <path d="M380 940 C330 900 260 890 180 900M380 940 C430 900 500 890 580 902" stroke-width="5" stroke-opacity=".6"/>
+      </g>
+    </symbol>
+    <symbol id="silhouette" viewBox="0 0 430 560"><path d="M215 60c62 0 100 48 100 110 0 44-20 80-50 98 72 22 125 90 140 180l6 112H19l6-112c15-90 68-158 140-180-30-18-50-54-50-98 0-62 38-110 100-110z" fill="#6f6a8f"/><text x="215" y="400" text-anchor="middle" fill="#e8dcc0" font-size="26" font-family="Georgia">аватар VTube Studio</text></symbol>
+  </defs>
+</svg>
+
+<script>
+/* ===== Настройки: поменяйте под себя ===== */
+const CONFIG = {
+  name: "Твой ник",
+  topic: "Elden Ring: Shadow of the Erdtree. Идём на Мессмера, без призывов.",
+  now: "Замок Теней, первая попытка",
+  goal: "Победить Мессмера",
+  goalNote: "Если пройдём — читаю гайд по сборке в конце",
+  socials: [["TWITCH", "twitch.tv/nick"], ["TG", "@nick"], ["BOOSTY", "boosty.to/nick"]],
+  countdownMinutes: 10,
+  twitchChannel: "",          // канал для чата, например "nick"; пусто — демо-сообщения
+};
+
+const stage = document.getElementById("stage");
+const inObs = !!window.obsstudio;
+if (inObs) document.body.classList.add("obs");
+
+function fit(){
+  const s = inObs ? 1 : Math.min(innerWidth / 1920, innerHeight / 1080);
+  stage.style.transform = "scale(" + s + ")";
+  stage.style.left = inObs ? "0" : (innerWidth - 1920 * s) / 2 + "px";
+  stage.style.top = inObs ? "0" : (innerHeight - 1080 * s) / 2 + "px";
+}
+addEventListener("resize", fit); fit();
+
+/* текст из настроек */
+document.querySelectorAll("[data-bind]").forEach(el => {
+  const k = el.dataset.bind;
+  if (k === "socials") el.innerHTML = CONFIG.socials.map(([t, v]) => "<span><i>" + t + "</i>" + v.replace(/</g, "&lt;") + "</span>").join("");
+  else el.textContent = CONFIG[k];
+});
+
+/* сцены */
+const SCENES = ["starting", "game", "brb", "ending"];
+function show(name){
+  if (!SCENES.includes(name)) name = "starting";
+  document.querySelectorAll(".scene").forEach(s => s.classList.toggle("on", s.id === "scene-" + name));
+  document.querySelectorAll("#switcher [data-scene]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.scene === name)));
+  current = name;
+}
+let current;
+show((location.hash || "#starting").slice(1));
+addEventListener("hashchange", () => show(location.hash.slice(1)));
+document.getElementById("switcher").addEventListener("click", e => {
+  const b = e.target.closest("button"); if (!b) return;
+  if (b.dataset.scene) show(b.dataset.scene);
+  if (b.id === "demo-death") addDeath(1);
+});
+
+/* обратный отсчёт */
+const end = Date.now() + CONFIG.countdownMinutes * 60000;
+setInterval(() => {
+  const left = Math.max(0, end - Date.now());
+  const m = Math.floor(left / 60000), s = Math.floor(left / 1000) % 60;
+  document.getElementById("countdown").textContent = left ? m + ":" + String(s).padStart(2, "0") : "Уже начинаем";
+}, 250);
+
+/* счётчики: сохраняются между перезапусками OBS */
+const store = {
+  get(k){ try { return Number(localStorage.getItem("er-" + k)) || 0; } catch (e) { return mem[k] || 0; } },
+  set(k, v){ mem[k] = v; try { localStorage.setItem("er-" + k, v); } catch (e) {} }
+};
+const mem = {};
+function renderStats(){
+  document.getElementById("deaths").textContent = store.get("deaths");
+  document.getElementById("bosses").textContent = store.get("bosses");
+  const d = store.get("deaths"), b = store.get("bosses");
+  document.getElementById("summary").innerHTML = "<span>Смертей за стрим: <b>" + d + "</b></span><span>Боссов повержено: <b>" + b + "</b></span>";
+}
+function addDeath(n){
+  store.set("deaths", Math.max(0, store.get("deaths") + n)); renderStats();
+  if (n > 0) { const f = document.getElementById("died-flash"); f.classList.remove("show"); void f.offsetWidth; f.classList.add("show"); }
+}
+/* Клавиши (в OBS: ПКМ по источнику → «Взаимодействовать»):
+   D — смерть, Shift+D — минус смерть, B — босс, Shift+B — минус босс, R — сбросить */
+addEventListener("keydown", e => {
+  const k = e.key.toLowerCase();
+  if (k === "d" || k === "в") addDeath(e.shiftKey ? -1 : 1);
+  if (k === "b" || k === "и") { store.set("bosses", Math.max(0, store.get("bosses") + (e.shiftKey ? -1 : 1))); renderStats(); }
+  if (k === "r" || k === "к") { store.set("deaths", 0); store.set("bosses", 0); renderStats(); }
+});
+renderStats();
+
+/* чат: Twitch без ключей (анонимный вход) или демо */
+const chat = document.getElementById("chat");
+const COLORS = ["#E9A04C", "#9FC2A0", "#D8A3B6", "#A9B8E0", "#E8DCC0"];
+function pushMsg(user, text, color){
+  const d = document.createElement("div"); d.className = "msg";
+  const b = document.createElement("b"); b.textContent = user; b.style.color = color || COLORS[user.length % COLORS.length];
+  const s = document.createElement("span"); s.textContent = text;
+  d.append(b, s); chat.append(d);
+  while (chat.children.length > 3) chat.firstChild.remove();
+}
+if (CONFIG.twitchChannel) {
+  const ws = new WebSocket("wss://irc-ws.chat.twitch.tv:443");
+  ws.onopen = () => { ws.send("CAP REQ :twitch.tv/tags"); ws.send("PASS SCHMOOPIIE"); ws.send("NICK justinfan" + Math.floor(Math.random() * 99999)); ws.send("JOIN #" + CONFIG.twitchChannel.toLowerCase()); };
+  ws.onmessage = ev => ev.data.split("\r\n").forEach(line => {
+    if (line.startsWith("PING")) return ws.send("PONG :tmi.twitch.tv");
+    const m = line.match(/^@([^ ]+) :([^!]+)![^ ]+ PRIVMSG #[^ ]+ :(.*)$/);
+    if (!m) return;
+    const tags = Object.fromEntries(m[1].split(";").map(t => t.split("=")));
+    pushMsg(tags["display-name"] || m[2], m[3], tags.color);
+  });
+} else {
+  const demo = [["Ranni_fan", "мессмер опять копьё кидает"], ["Погасший_42", "попробуй уклон влево"], ["Мелина", "благодать рядом, если что"], ["Ghostflame", "ставлю на 30 смертей"], ["Tarnished", "лови его на второй фазе"], ["Ведьма_Сорена", "уже 10 попыток, держимся"]];
+  let i = 0; demo.slice(0, 4).forEach(d => pushMsg(d[0], d[1]));
+  setInterval(() => { const d = demo[i++ % demo.length]; pushMsg(d[0], d[1]); }, 4200);
+}
+
+/* частицы благодати: золотые искры поднимаются вверх */
+const cv = document.getElementById("grace"), g = cv.getContext("2d");
+const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+const motes = Array.from({ length: 70 }, () => spawn(true));
+function spawn(initial){
+  return { x: Math.random() * 1920, y: initial ? Math.random() * 1080 : 1090, r: .8 + Math.random() * 2.2, v: .15 + Math.random() * .5, w: Math.random() * 6.28, a: .25 + Math.random() * .6 };
+}
+function tick(){
+  g.clearRect(0, 0, 1920, 1080);
+  for (const m of motes) {
+    if (!still) { m.y -= m.v; m.w += .01; m.x += Math.sin(m.w) * .25; }
+    if (m.y < -10) Object.assign(m, spawn(false));
+    const fade = Math.min(1, m.y / 300) * m.a;
+    const gr = g.createRadialGradient(m.x, m.y, 0, m.x, m.y, m.r * 4);
+    gr.addColorStop(0, "rgba(243,221,162," + fade + ")"); gr.addColorStop(1, "rgba(233,160,76,0)");
+    g.fillStyle = gr; g.beginPath(); g.arc(m.x, m.y, m.r * 4, 0, 6.283); g.fill();
+  }
+  if (!still) requestAnimationFrame(tick);
+}
+tick();
+</script>
+</body>
+</html>
